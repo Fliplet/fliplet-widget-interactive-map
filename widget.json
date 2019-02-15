@@ -9,12 +9,12 @@
   "interface": {
     "dependencies": [
       "fliplet-core",
+      "handlebars",
+      "vue.js",
+      "fliplet-ui-panzoom",
       "fliplet-studio-ui",
       "fliplet-datasources",
-      "fliplet-ui-panzoom",
-      "bootstrap",
-      "handlebars",
-      "vue.js"
+      "bootstrap"
     ],
     "assets": [
       "vendor/bootstrap-colorpicker.min.js",

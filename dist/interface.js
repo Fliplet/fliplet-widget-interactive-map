@@ -118,281 +118,283 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _config_default_table__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../config/default-table */ "./js/config/default-table.js");
 
 
-var widgetId = parseInt(Fliplet.Widget.getDefaultId(), 10);
-var widgetData = Fliplet.Widget.getData(widgetId) || {};
 
 
-Vue.directive('sortable', {
-  inserted: function inserted(el, binding) {
-    if (sortablejs_Sortable_js__WEBPACK_IMPORTED_MODULE_2__) {
-      new sortablejs_Sortable_js__WEBPACK_IMPORTED_MODULE_2__(el, binding.value || {});
+Fliplet().then(function () {
+  var widgetId = parseInt(Fliplet.Widget.getDefaultId(), 10);
+  var widgetData = Fliplet.Widget.getData(widgetId) || {};
+  Vue.directive('sortable', {
+    inserted: function inserted(el, binding) {
+      if (sortablejs_Sortable_js__WEBPACK_IMPORTED_MODULE_2__) {
+        new sortablejs_Sortable_js__WEBPACK_IMPORTED_MODULE_2__(el, binding.value || {});
+      }
     }
-  }
-});
-var selector = '#interactive-map-app';
-var app = new Vue({
-  el: selector,
-  data: function data() {
-    return {
-      appName: Fliplet.Env.get('appName'),
-      organizationId: Fliplet.Env.get('organizationId'),
-      defaultColumns: _config_default_table__WEBPACK_IMPORTED_MODULE_3__["default"],
-      autoDataSource: widgetData.autoDataSource || false,
-      dataSources: [],
-      filePickerProvider: null,
-      settings: widgetData,
-      maps: widgetData.maps || [],
-      markers: widgetData.markers || [],
-      hasError: false,
-      hasErrorOnSave: false,
-      showAddMarkersUI: false
-    };
-  },
-  methods: {
-    loadDataSources: function loadDataSources() {
-      return Fliplet.DataSources.get({
-        roles: 'publisher,editor',
-        type: null
-      }, {
-        cache: false
-      });
-    },
-    createDataSource: function createDataSource() {
-      var _this = this;
-
-      var name = "".concat(this.appName, " - Map Markers");
-      return Fliplet.DataSources.create({
-        name: name,
-        organizationId: this.organizationId,
-        columns: this.defaultColumns
-      }).then(function (ds) {
-        _this.settings.markersDataSourceId = ds.id;
-        _this.settings.markerNameColumn = 'Name';
-        _this.settings.markerMapColumn = 'Map name';
-        _this.settings.markerTypeColumn = 'Marker style', _this.settings.markerXPositionColumn = 'Position X', _this.settings.markerYPositionColumn = 'Position Y';
-        _this.settings.autoDataSource = true;
-      });
-    },
-    onAddMap: function onAddMap() {
-      var newItem = {
-        id: Fliplet.guid(),
-        isFromNew: true,
-        name: "Map ".concat(this.maps.length + 1),
-        type: 'map-panel'
+  });
+  var selector = '#interactive-map-app';
+  var app = new Vue({
+    el: selector,
+    data: function data() {
+      return {
+        appName: Fliplet.Env.get('appName'),
+        organizationId: Fliplet.Env.get('organizationId'),
+        defaultColumns: _config_default_table__WEBPACK_IMPORTED_MODULE_3__["default"],
+        autoDataSource: widgetData.autoDataSource || false,
+        dataSources: [],
+        filePickerProvider: null,
+        settings: widgetData,
+        maps: widgetData.maps || [],
+        markers: widgetData.markers || [],
+        hasError: false,
+        hasErrorOnSave: false,
+        showAddMarkersUI: false
       };
-      this.maps.push(newItem);
-      this.checkErrorStates();
     },
-    onSortMaps: function onSortMaps(event) {
-      this.maps.splice(event.newIndex, 0, this.maps.splice(event.oldIndex, 1)[0]);
-    },
-    deleteMap: function deleteMap(index) {
-      var _this2 = this;
+    methods: {
+      loadDataSources: function loadDataSources() {
+        return Fliplet.DataSources.get({
+          roles: 'publisher,editor',
+          type: null
+        }, {
+          cache: false
+        });
+      },
+      createDataSource: function createDataSource() {
+        var _this = this;
 
-      Fliplet.Modal.confirm({
-        title: 'Delete map',
-        message: '<p>Any marker assigned to this map won\'t be visible until you assign it to a different map.</p><p>Are you sure you want to delete this map?</p>'
-      }).then(function (result) {
-        if (!result) {
-          return;
-        }
+        var name = "".concat(this.appName, " - Map Markers");
+        return Fliplet.DataSources.create({
+          name: name,
+          organizationId: this.organizationId,
+          columns: this.defaultColumns
+        }).then(function (ds) {
+          _this.settings.markersDataSourceId = ds.id;
+          _this.settings.markerNameColumn = 'Name';
+          _this.settings.markerMapColumn = 'Map name';
+          _this.settings.markerTypeColumn = 'Marker style', _this.settings.markerXPositionColumn = 'Position X', _this.settings.markerYPositionColumn = 'Position Y';
+          _this.settings.autoDataSource = true;
+        });
+      },
+      onAddMap: function onAddMap() {
+        var newItem = {
+          id: Fliplet.guid(),
+          isFromNew: true,
+          name: "Map ".concat(this.maps.length + 1),
+          type: 'map-panel'
+        };
+        this.maps.push(newItem);
+        this.checkErrorStates();
+      },
+      onSortMaps: function onSortMaps(event) {
+        this.maps.splice(event.newIndex, 0, this.maps.splice(event.oldIndex, 1)[0]);
+      },
+      deleteMap: function deleteMap(index) {
+        var _this2 = this;
 
-        _this2.maps.splice(index, 1);
-      });
-    },
-    onAddMarker: function onAddMarker() {
-      var newItem = {
-        id: Fliplet.guid(),
-        isFromNew: true,
-        name: "Marker ".concat(this.markers.length + 1),
-        icon: 'fa fa-circle',
-        color: '#337ab7',
-        type: 'marker-panel'
-      };
-      this.markers.push(newItem);
-      this.checkErrorStates();
-    },
-    deleteMarker: function deleteMarker(index) {
-      var _this3 = this;
+        Fliplet.Modal.confirm({
+          title: 'Delete map',
+          message: '<p>Any marker assigned to this map won\'t be visible until you assign it to a different map.</p><p>Are you sure you want to delete this map?</p>'
+        }).then(function (result) {
+          if (!result) {
+            return;
+          }
 
-      Fliplet.Modal.confirm({
-        title: 'Delete marker style',
-        message: '<p>You will have to manually update any marker that has this style applied.</p><p>Are you sure you want to delete this marker style?</p>'
-      }).then(function (result) {
-        if (!result) {
-          return;
-        }
+          _this2.maps.splice(index, 1);
+        });
+      },
+      onAddMarker: function onAddMarker() {
+        var newItem = {
+          id: Fliplet.guid(),
+          isFromNew: true,
+          name: "Marker ".concat(this.markers.length + 1),
+          icon: 'fa fa-circle',
+          color: '#337ab7',
+          type: 'marker-panel'
+        };
+        this.markers.push(newItem);
+        this.checkErrorStates();
+      },
+      deleteMarker: function deleteMarker(index) {
+        var _this3 = this;
 
-        _this3.markers.splice(index, 1);
-      });
-    },
-    checkErrorStates: function checkErrorStates() {
-      if (this.maps.length) {
-        this.hasErrorOnSave = false;
+        Fliplet.Modal.confirm({
+          title: 'Delete marker style',
+          message: '<p>You will have to manually update any marker that has this style applied.</p><p>Are you sure you want to delete this marker style?</p>'
+        }).then(function (result) {
+          if (!result) {
+            return;
+          }
 
-        if (this.markers.length) {
-          this.hasError = false;
-        }
-      }
-    },
-    onPanelSettingChanged: function onPanelSettingChanged(panelData) {
-      var _this4 = this;
+          _this3.markers.splice(index, 1);
+        });
+      },
+      checkErrorStates: function checkErrorStates() {
+        if (this.maps.length) {
+          this.hasErrorOnSave = false;
 
-      this.maps.forEach(function (panel, index) {
-        if (panelData.name == panel.name && panelData.id !== panel.id) {
-          panelData.error = 'Maps must have different names';
-        }
-
-        if (panelData.id === panel.id) {
-          // To overcome the array change caveat
-          // https://vuejs.org/v2/guide/list.html#Caveats
-          Vue.set(_this4.maps, index, panelData);
-        }
-      });
-    },
-    onMarkerPanelSettingChanged: function onMarkerPanelSettingChanged(panelData) {
-      var _this5 = this;
-
-      this.markers.forEach(function (panel, index) {
-        if (panelData.name == panel.name && panelData.id !== panel.id) {
-          panelData.error = 'Marker styles must have different names';
-        }
-
-        if (panelData.id === panel.id) {
-          // To overcome the array change caveat
-          // https://vuejs.org/v2/guide/list.html#Caveats
-          Vue.set(_this5.markers, index, panelData);
-        }
-      });
-    },
-    onAddMarkersSettingChanged: function onAddMarkersSettingChanged(addMarkersData) {
-      this.settings = _.assignIn(this.settings, addMarkersData);
-    },
-    openAddMarkers: function openAddMarkers() {
-      if (!this.maps.length || !this.markers.length) {
-        this.hasError = true;
-        return;
-      }
-
-      this.hasError = false;
-      this.hasErrorOnSave = false;
-      this.prepareToSaveData(true);
-      this.showAddMarkersUI = true;
-      Fliplet.Studio.emit('widget-mode', this.settings.savedData ? 'full-screen' : 'normal');
-    },
-    goBackToSettings: function goBackToSettings() {
-      this.showAddMarkersUI = false;
-      Fliplet.Studio.emit('widget-mode', 'normal');
-    },
-    prepareToSaveData: function prepareToSaveData(stopComplete) {
-      if (!stopComplete && !this.maps.length) {
-        this.hasErrorOnSave = true;
-        return;
-      }
-
-      if (stopComplete && (!this.maps.length || !this.markers.length)) {
-        this.hasError = true;
-        return;
-      }
-
-      this.hasError = false;
-      this.hasErrorOnSave = false; // Mark 'isFromNew' as false
-
-      this.maps.forEach(function (map) {
-        map.isFromNew = false;
-      });
-      this.markers.forEach(function (marker) {
-        marker.isFromNew = false;
-      });
-      var newSettings = {
-        maps: this.maps,
-        markers: this.markers
-      };
-      this.settings = _.assignIn(this.settings, newSettings);
-      this.settings.savedData = true;
-      this.saveData(stopComplete);
-    },
-    saveData: function saveData(stopComplete) {
-      Fliplet.Widget.save(this.settings).then(function () {
-        if (!stopComplete) {
-          Fliplet.Widget.complete();
-          Fliplet.Studio.emit('reload-widget-instance', widgetId);
-        }
-      });
-    }
-  },
-  created: function () {
-    var _created = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()(
-    /*#__PURE__*/
-    _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee() {
-      var _this6 = this;
-
-      return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              Fliplet.InteractiveMap.on('map-panel-settings-changed', this.onPanelSettingChanged);
-              Fliplet.InteractiveMap.on('marker-panel-settings-changed', this.onMarkerPanelSettingChanged);
-              Fliplet.InteractiveMap.on('add-markers-settings-changed', this.onAddMarkersSettingChanged); // Create data source on first time
-
-              if (this.autoDataSource) {
-                _context.next = 6;
-                break;
-              }
-
-              _context.next = 6;
-              return this.createDataSource();
-
-            case 6:
-              _context.next = 8;
-              return this.loadDataSources();
-
-            case 8:
-              this.dataSources = _context.sent;
-              // Switches UI to ready state
-              $(selector).removeClass('is-loading');
-              Fliplet.Studio.onMessage(function (event) {
-                if (event.data && event.data.event === 'overlay-close' && event.data.data && event.data.data.dataSourceId) {
-                  _this6.loadDataSources();
-                }
-              });
-              Fliplet.Widget.onSaveRequest(function () {
-                if (window.filePickerProvider) {
-                  window.filePickerProvider.forwardSaveRequest();
-                  return;
-                }
-
-                if (window.iconPickerProvider) {
-                  window.iconPickerProvider.forwardSaveRequest();
-                  return;
-                }
-
-                Fliplet.InteractiveMap.emit('maps-save');
-                Fliplet.InteractiveMap.emit('markers-save');
-                Fliplet.InteractiveMap.emit('add-markers-save');
-
-                _this6.prepareToSaveData();
-              });
-
-            case 12:
-            case "end":
-              return _context.stop();
+          if (this.markers.length) {
+            this.hasError = false;
           }
         }
-      }, _callee, this);
-    }));
+      },
+      onPanelSettingChanged: function onPanelSettingChanged(panelData) {
+        var _this4 = this;
 
-    function created() {
-      return _created.apply(this, arguments);
+        this.maps.forEach(function (panel, index) {
+          if (panelData.name == panel.name && panelData.id !== panel.id) {
+            panelData.error = 'Maps must have different names';
+          }
+
+          if (panelData.id === panel.id) {
+            // To overcome the array change caveat
+            // https://vuejs.org/v2/guide/list.html#Caveats
+            Vue.set(_this4.maps, index, panelData);
+          }
+        });
+      },
+      onMarkerPanelSettingChanged: function onMarkerPanelSettingChanged(panelData) {
+        var _this5 = this;
+
+        this.markers.forEach(function (panel, index) {
+          if (panelData.name == panel.name && panelData.id !== panel.id) {
+            panelData.error = 'Marker styles must have different names';
+          }
+
+          if (panelData.id === panel.id) {
+            // To overcome the array change caveat
+            // https://vuejs.org/v2/guide/list.html#Caveats
+            Vue.set(_this5.markers, index, panelData);
+          }
+        });
+      },
+      onAddMarkersSettingChanged: function onAddMarkersSettingChanged(addMarkersData) {
+        this.settings = _.assignIn(this.settings, addMarkersData);
+      },
+      openAddMarkers: function openAddMarkers() {
+        if (!this.maps.length || !this.markers.length) {
+          this.hasError = true;
+          return;
+        }
+
+        this.hasError = false;
+        this.hasErrorOnSave = false;
+        this.prepareToSaveData(true);
+        this.showAddMarkersUI = true;
+        Fliplet.Studio.emit('widget-mode', this.settings.savedData ? 'full-screen' : 'normal');
+      },
+      goBackToSettings: function goBackToSettings() {
+        this.showAddMarkersUI = false;
+        Fliplet.Studio.emit('widget-mode', 'normal');
+      },
+      prepareToSaveData: function prepareToSaveData(stopComplete) {
+        if (!stopComplete && !this.maps.length) {
+          this.hasErrorOnSave = true;
+          return;
+        }
+
+        if (stopComplete && (!this.maps.length || !this.markers.length)) {
+          this.hasError = true;
+          return;
+        }
+
+        this.hasError = false;
+        this.hasErrorOnSave = false; // Mark 'isFromNew' as false
+
+        this.maps.forEach(function (map) {
+          map.isFromNew = false;
+        });
+        this.markers.forEach(function (marker) {
+          marker.isFromNew = false;
+        });
+        var newSettings = {
+          maps: this.maps,
+          markers: this.markers
+        };
+        this.settings = _.assignIn(this.settings, newSettings);
+        this.settings.savedData = true;
+        this.saveData(stopComplete);
+      },
+      saveData: function saveData(stopComplete) {
+        Fliplet.Widget.save(this.settings).then(function () {
+          if (!stopComplete) {
+            Fliplet.Widget.complete();
+            Fliplet.Studio.emit('reload-widget-instance', widgetId);
+          }
+        });
+      }
+    },
+    created: function () {
+      var _created = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()(
+      /*#__PURE__*/
+      _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee() {
+        var _this6 = this;
+
+        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                Fliplet.InteractiveMap.on('map-panel-settings-changed', this.onPanelSettingChanged);
+                Fliplet.InteractiveMap.on('marker-panel-settings-changed', this.onMarkerPanelSettingChanged);
+                Fliplet.InteractiveMap.on('add-markers-settings-changed', this.onAddMarkersSettingChanged); // Create data source on first time
+
+                if (this.autoDataSource) {
+                  _context.next = 6;
+                  break;
+                }
+
+                _context.next = 6;
+                return this.createDataSource();
+
+              case 6:
+                _context.next = 8;
+                return this.loadDataSources();
+
+              case 8:
+                this.dataSources = _context.sent;
+                // Switches UI to ready state
+                $(selector).removeClass('is-loading');
+                Fliplet.Studio.onMessage(function (event) {
+                  if (event.data && event.data.event === 'overlay-close' && event.data.data && event.data.data.dataSourceId) {
+                    _this6.loadDataSources();
+                  }
+                });
+                Fliplet.Widget.onSaveRequest(function () {
+                  if (window.filePickerProvider) {
+                    window.filePickerProvider.forwardSaveRequest();
+                    return;
+                  }
+
+                  if (window.iconPickerProvider) {
+                    window.iconPickerProvider.forwardSaveRequest();
+                    return;
+                  }
+
+                  Fliplet.InteractiveMap.emit('maps-save');
+                  Fliplet.InteractiveMap.emit('markers-save');
+                  Fliplet.InteractiveMap.emit('add-markers-save');
+
+                  _this6.prepareToSaveData();
+                });
+
+              case 12:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee, this);
+      }));
+
+      function created() {
+        return _created.apply(this, arguments);
+      }
+
+      return created;
+    }(),
+    destroyed: function destroyed() {
+      Fliplet.InteractiveMap.off('map-panel-settings-changed', this.onPanelSettingChanged);
+      Fliplet.InteractiveMap.off('marker-panel-settings-changed', this.onMarkerPanelSettingChanged);
+      Fliplet.InteractiveMap.off('add-markers-settings-changed', this.onAddMarkersSettingChanged);
     }
-
-    return created;
-  }(),
-  destroyed: function destroyed() {
-    Fliplet.InteractiveMap.off('map-panel-settings-changed', this.onPanelSettingChanged);
-    Fliplet.InteractiveMap.off('marker-panel-settings-changed', this.onMarkerPanelSettingChanged);
-    Fliplet.InteractiveMap.off('add-markers-settings-changed', this.onAddMarkersSettingChanged);
-  }
+  });
 });
 
 /***/ }),
