@@ -35,16 +35,16 @@
   "build": {
     "dependencies": [
       "fliplet-core",
-      "fliplet-datasources",
-      "fliplet-ui-panzoom",
-      "bootstrap",
       "handlebars",
-      "font-awesome",
-      "vue.js"
+      "vue.js",
+      "fliplet-ui-panzoom",
+      "fliplet-datasources",
+      "bootstrap",
+      "font-awesome"
     ],
     "assets": [
-      "dist/build.js",
-      "css/build.css"
+      "css/build.css",
+      "dist/build.js"
     ]
   },
   "references": [
