@@ -90,44 +90,60 @@
 /*!**************************************!*\
   !*** ./js/interface/marker-panel.js ***!
   \**************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
+/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__);
 
 Fliplet.InteractiveMap.component('marker-panel', {
   componentName: 'Marker Panel',
   props: {
     id: {
       type: String,
-      default: ''
+      "default": ''
     },
     name: {
       type: String,
-      default: ''
+      "default": ''
     },
     icon: {
       type: String,
-      default: 'fa fa-circle'
+      "default": 'fa fa-circle'
     },
     color: {
       type: String,
-      default: '#337ab7'
+      "default": '#337ab7'
     },
     size: {
       type: String,
-      default: '24px'
+      "default": '24px'
     },
     type: {
       type: String,
-      default: 'marker-panel'
+      "default": 'marker-panel'
     },
     isFromNew: {
       type: Boolean,
-      default: true
+      "default": true
     },
     emptyIconNotification: {
       type: Boolean,
-      default: false
+      "default": false
     }
+  },
+  data: function data() {
+    return {
+      widgetInstanceId: Fliplet.Widget.getDefaultId(),
+      dataSourceId: Fliplet.Widget.getData().markersDataSourceId,
+      updateDebounced: _.debounce(this.updateDataSource, 1000),
+      entries: undefined,
+      columns: undefined,
+      dataSourceConnection: undefined,
+      oldStyleName: ''
+    };
   },
   methods: {
     onInputData: function onInputData() {
@@ -135,8 +151,40 @@ Fliplet.InteractiveMap.component('marker-panel', {
 
       Fliplet.InteractiveMap.emit('marker-panel-settings-changed', componentData);
     },
-    openIconPicker: function openIconPicker() {
+    updateDataSource: function updateDataSource() {
       var _this = this;
+
+      Fliplet.DataSources.connect(this.dataSourceId).then(function (connection) {
+        _this.dataSourceConnection = connection;
+        connection.find({
+          where: _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()({}, 'Marker style', _this.oldStyleName)
+        }).then(function (records) {
+          if (!records.length) {
+            return;
+          }
+
+          _this.dataSourceConnection.find().then(function (records) {
+            records.forEach(function (elem, index, array) {
+              if (elem.data['Marker style'] === _this.oldStyleName) {
+                array[index].data['Marker style'] = _this.name;
+              }
+            });
+            _this.entries = records;
+            _this.columns = _.keys(records[0].data);
+
+            _this.dataSourceConnection.commit(_this.entries, _this.columns);
+
+            _this.oldStyleName = _this.name;
+            Fliplet.Studio.emit('reload-widget-instance', _this.widgetInstanceId);
+          });
+        });
+      });
+    },
+    getStyleName: function getStyleName() {
+      this.oldStyleName = this.name;
+    },
+    openIconPicker: function openIconPicker() {
+      var _this2 = this;
 
       this.icon = this.icon || '';
       Fliplet.Widget.toggleCancelButton(false);
@@ -158,13 +206,13 @@ Fliplet.InteractiveMap.component('marker-panel', {
         Fliplet.Widget.toggleCancelButton(true);
 
         if (!data.data.icon) {
-          _this.emptyIconNotification = true;
+          _this2.emptyIconNotification = true;
         } else {
-          _this.icon = data.data.icon;
-          _this.emptyIconNotification = false;
+          _this2.icon = data.data.icon;
+          _this2.emptyIconNotification = false;
         }
 
-        _this.onInputData();
+        _this2.onInputData();
 
         window.iconPickerProvider = null;
         Fliplet.Studio.emit('widget-save-label-reset');
@@ -179,7 +227,7 @@ Fliplet.InteractiveMap.component('marker-panel', {
     Fliplet.InteractiveMap.off('markers-save', this.onInputData);
   },
   mounted: function mounted() {
-    var _this2 = this;
+    var _this3 = this;
 
     var $vm = this;
     var $colorpickerElement = $('#list-item-color-' + $vm.id).parents('[colorpicker-component]');
@@ -204,13 +252,39 @@ Fliplet.InteractiveMap.component('marker-panel', {
       $vm.onInputData();
     });
     $('#list-item-color-' + $vm.id).on('click', function () {
-      $(_this2).prev('.input-group-addon').find('i').trigger('click');
+      $(_this3).prev('.input-group-addon').find('i').trigger('click');
     });
     $('.input-group-addon i').on('click', function () {
-      $(_this2).parents('.input-group-addon').next('#list-item-color-' + $vm.id).trigger('focus');
+      $(_this3).parents('.input-group-addon').next('#list-item-color-' + $vm.id).trigger('focus');
     });
   }
 });
+
+/***/ }),
+
+/***/ "./node_modules/@babel/runtime/helpers/defineProperty.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/@babel/runtime/helpers/defineProperty.js ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+}
+
+module.exports = _defineProperty;
 
 /***/ }),
 
@@ -221,9 +295,7 @@ Fliplet.InteractiveMap.component('marker-panel', {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-
-module.exports = __webpack_require__(/*! /Users/twu/Sites/fliplet/widgets/fliplet-widget-interactive-map/js/interface/marker-panel.js */"./js/interface/marker-panel.js");
-
+module.exports = __webpack_require__(/*! C:\Max\Upplabs\Fliplet\interactive graphics\fliplet-widget-interactive-map\js\interface\marker-panel.js */"./js/interface/marker-panel.js");
 
 
 /***/ })

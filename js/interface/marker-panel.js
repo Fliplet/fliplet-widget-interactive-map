@@ -34,10 +34,48 @@ Fliplet.InteractiveMap.component('marker-panel', {
       default: false
     }
   },
+  data () {
+    return {
+      widgetInstanceId: Fliplet.Widget.getDefaultId(),
+      dataSourceId: Fliplet.Widget.getData().markersDataSourceId,
+      updateDebounced: _.debounce(this.updateDataSource, 1000),
+      entries: undefined,
+      columns: undefined,
+      dataSourceConnection: undefined,
+      oldStyleName: ''
+    }
+  },
   methods: {
     onInputData() {
       const componentData = _.pick(this, ['id', 'name', 'icon', 'color', 'size', 'type', 'isFromNew'])
       Fliplet.InteractiveMap.emit('marker-panel-settings-changed', componentData)
+    },
+    updateDataSource() {
+      Fliplet.DataSources.connect(this.dataSourceId).then(connection => {
+        this.dataSourceConnection = connection
+        connection.find({where: {['Marker style']: this.oldStyleName}}).then(records => {
+          if (!records.length) {
+            return
+          }
+
+          this.dataSourceConnection.find().then(records => {
+            records.forEach((elem, index, array) => {
+              if (elem.data['Marker style'] === this.oldStyleName) {
+                array[index].data['Marker style'] = this.name
+              }
+            })
+
+            this.entries = records
+            this.columns = _.keys(records[0].data)
+            this.dataSourceConnection.commit(this.entries, this.columns)
+            this.oldStyleName = this.name
+            Fliplet.Studio.emit('reload-widget-instance', this.widgetInstanceId)
+          })
+        })
+      })
+    },
+    getStyleName() {
+      this.oldStyleName = this.name
     },
     openIconPicker() {
       this.icon = this.icon || ''
