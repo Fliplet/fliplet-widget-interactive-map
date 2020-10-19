@@ -28,6 +28,14 @@ Fliplet.InteractiveMap.component('marker-panel', {
     isFromNew: {
       type: Boolean,
       default: true
+    },
+    error: {
+      type: String,
+      default: ''
+    },
+    emptyIconNotification: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {
@@ -38,26 +46,24 @@ Fliplet.InteractiveMap.component('marker-panel', {
     openIconPicker() {
       this.icon = this.icon || ''
 
+      Fliplet.Widget.toggleCancelButton(false)
+
       window.iconPickerProvider = Fliplet.Widget.open('com.fliplet.icon-selector', {
         // Also send the data I have locally, so that
         // the interface gets repopulated with the same stuff
         data: this.icon,
         // Events fired from the provider
         onEvent: (event, data) => {
-          if (event === 'interface-validate') {
-            Fliplet.Widget.toggleSaveButton(data.isValid === true)
+          switch (event) {
+            case 'interface-validate': 
+              Fliplet.Widget.toggleSaveButton(data.isValid === true)
+              break
+            case 'icon-clicked':
+              Fliplet.Widget.toggleSaveButton(data.isSelected);
+              break
+            default:
+              break
           }
-        }
-      })
-
-      window.addEventListener('message', (event) => {
-        if (event.data === 'cancel-button-pressed') {
-          window.iconPickerProvider.close()
-          window.iconPickerProvider = null
-
-          Fliplet.Studio.emit('widget-save-label-update', {
-            text: 'Save'
-          })
         }
       })
 
@@ -66,14 +72,20 @@ Fliplet.InteractiveMap.component('marker-panel', {
       })
 
       window.iconPickerProvider.then((data) => {
-        if (data.data) {
+        Fliplet.Widget.toggleCancelButton(true)
+        if (!data.data.icon) {
+          this.emptyIconNotification = true
+        } else {
           this.icon = data.data.icon
+          this.emptyIconNotification = false
         }
-        this.onInputData()
+
+        this.onInputData();
         window.iconPickerProvider = null
         Fliplet.Studio.emit('widget-save-label-reset')
+        Fliplet.Widget.toggleSaveButton(false)
         return Promise.resolve()
-      })
+      });
     }
   },
   created() {

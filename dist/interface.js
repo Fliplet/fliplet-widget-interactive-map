@@ -134,6 +134,7 @@ var app = new Vue({
   el: selector,
   data: function data() {
     return {
+      appId: Fliplet.Env.get('appId'),
       appName: Fliplet.Env.get('appName'),
       organizationId: Fliplet.Env.get('organizationId'),
       defaultColumns: _config_default_table__WEBPACK_IMPORTED_MODULE_3__["default"],
@@ -165,6 +166,7 @@ var app = new Vue({
       return Fliplet.DataSources.create({
         name: name,
         organizationId: this.organizationId,
+        appId: this.appId,
         columns: this.defaultColumns,
         bundle: true
       }).then(function (ds) {
@@ -372,6 +374,22 @@ var app = new Vue({
         this.hasError = {
           message: 'Maps must have different names.'
         };
+        return;
+      }
+
+      var emptyNameIndex = _.findIndex(this.maps, function (map) {
+        return map.name === '';
+      });
+
+      if (emptyNameIndex !== -1) {
+        this.maps[emptyNameIndex].error = "Map name shouldn't be empty";
+
+        if (!stopComplete) {
+          Fliplet.Modal.alert({
+            message: "One of your maps doesn't have a valid name. Please input a valid name to save the configuration."
+          });
+        }
+
         return;
       } // Check if DS info missing
 
@@ -2856,7 +2874,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/**!
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /Users/hcarneiro/Repos/Fliplet/fliplet-widget-interactive-floorplan/js/libs/interface.js */"./js/libs/interface.js");
+module.exports = __webpack_require__(/*! C:\Users\Yaroslav\Desktop\Fliplet\fliplet-widget-interactive-map\js\libs\interface.js */"./js/libs/interface.js");
 
 
 /***/ })

@@ -124,6 +124,10 @@ Fliplet.InteractiveMap.component('marker-panel', {
       type: Boolean,
       "default": true
     },
+    error: {
+      type: String,
+      "default": ''
+    },
     emptyIconNotification: {
       type: Boolean,
       "default": false
@@ -146,8 +150,17 @@ Fliplet.InteractiveMap.component('marker-panel', {
         data: this.icon,
         // Events fired from the provider
         onEvent: function onEvent(event, data) {
-          if (event === 'interface-validate') {
-            Fliplet.Widget.toggleSaveButton(data.isValid === true);
+          switch (event) {
+            case 'interface-validate':
+              Fliplet.Widget.toggleSaveButton(data.isValid === true);
+              break;
+
+            case 'icon-clicked':
+              Fliplet.Widget.toggleSaveButton(data.isSelected);
+              break;
+
+            default:
+              break;
           }
         }
       });
@@ -156,6 +169,7 @@ Fliplet.InteractiveMap.component('marker-panel', {
       });
       window.iconPickerProvider.then(function (data) {
         Fliplet.Widget.toggleCancelButton(true);
+
         if (!data.data.icon) {
           _this.emptyIconNotification = true;
         } else {
@@ -167,6 +181,7 @@ Fliplet.InteractiveMap.component('marker-panel', {
 
         window.iconPickerProvider = null;
         Fliplet.Studio.emit('widget-save-label-reset');
+        Fliplet.Widget.toggleSaveButton(false);
         return Promise.resolve();
       });
     }
@@ -220,7 +235,7 @@ Fliplet.InteractiveMap.component('marker-panel', {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /Users/hcarneiro/Repos/Fliplet/fliplet-widget-interactive-floorplan/js/interface/marker-panel.js */"./js/interface/marker-panel.js");
+module.exports = __webpack_require__(/*! C:\Users\Yaroslav\Desktop\Fliplet\fliplet-widget-interactive-map\js\interface\marker-panel.js */"./js/interface/marker-panel.js");
 
 
 /***/ })

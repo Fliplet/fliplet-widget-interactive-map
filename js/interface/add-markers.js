@@ -64,6 +64,7 @@ Fliplet.InteractiveMap.component('add-markers', {
       markersData: undefined,
       mappedMarkerData: [],
       allMarkerStyles: this.widgetData.markers,
+      hasError: false,
       imageLoaded: false,
       activeMarker: 0,
       selectedMarkerData: {
@@ -75,7 +76,9 @@ Fliplet.InteractiveMap.component('add-markers', {
       saveDebounced: _.debounce(this.saveToDataSource, 1000),
       dsConfigError: false,
       dataSourceToDelete: undefined,
-      showEditMarkerOverlay: false
+      showEditMarkerOverlay: false,
+      widgetInstanceId: Fliplet.Widget.getDefaultId(),
+      styleNames: []
     }
   },
   computed: {
@@ -179,6 +182,10 @@ Fliplet.InteractiveMap.component('add-markers', {
       this.$nextTick(() => this.$refs['changename-' + index][0].focus())
     },
     confirmName(index, fromCancel) {
+      if (!this.mappedMarkerData[index].data.name.trim()) {
+        return
+      }
+
       this.mappedMarkerData[index].data.updateName = !this.mappedMarkerData[index].data.updateName
 
       if (!fromCancel) {
@@ -193,7 +200,7 @@ Fliplet.InteractiveMap.component('add-markers', {
     },
     deleteMarker(index) {
       const markerId = this.mappedMarkerData[index].id
-        
+
       if (markerId) {
         this.flPanZoomInstances[this.selectedMarkerData.map.id].markers.remove(markerId, { keepInDom: false })
       }
@@ -257,12 +264,24 @@ Fliplet.InteractiveMap.component('add-markers', {
           panelData.error = 'Marker styles must have different names'
         }
 
+        if (!panelData.name) {
+          panelData.error = 'Marker style name should not be empty'
+        }
+
         if (panelData.id === panel.id) {
           // To overcome the array change caveat
           // https://vuejs.org/v2/guide/list.html#Caveats
           Vue.set(this.allMarkerStyles, index, panelData)
         }
       })
+
+
+      Fliplet.Widget.toggleSaveButton(!panelData.error)
+      this.hasError = !!panelData.error
+
+      if (this.hasError) {
+        return
+      }
 
       this.saveData()
     },
@@ -301,20 +320,86 @@ Fliplet.InteractiveMap.component('add-markers', {
       this.allMarkerStyles.push(newItem)
       this.saveData()
     },
-    deleteMarkerStyle(index) {
+    deleteMarkerStyle(options) {
+      var option = options || {}
+      var index = option.index
+
       Fliplet.Modal.confirm({
         title: 'Delete marker style',
         message: '<p>You will have to manually update any marker that has this style applied.</p><p>Are you sure you want to delete this marker style?</p>'
-      }).then((result) => {
+      }).then(result => {
         if (!result) {
           return
         }
 
+        // This is used to remove error from a deleting marker style
+        if (option.marker.error) {
+          var markerToDelete = this.allMarkerStyles[index]
+
+          markerToDelete.name = 'delete'
+          markerToDelete.error = ''
+          this.onMarkerPanelSettingChanged(markerToDelete)
+        }
+
+        // Remove deleting marker style from marker style arrays
         this.allMarkerStyles.splice(index, 1)
+        _.remove(this.styleNames, elem => {
+          return elem.id === option.marker.id
+        })
       })
     },
     toggleEditMarkerOverlay() {
-      this.showEditMarkerOverlay = !!!this.showEditMarkerOverlay
+      if (this.hasError) {
+        return
+      }
+
+      if (!this.showEditMarkerOverlay) {
+        this.allMarkerStyles.forEach(elem => {
+          this.styleNames.push({'oldStyleName' : elem.name, 'newStyleName' : undefined, 'id' : elem.id})
+        })
+        Fliplet.Widget.toggleSaveButton(false)
+      }
+
+      if (this.showEditMarkerOverlay) {
+        $('.marker-overlay-saving').removeClass('hidden')
+
+        for (let i = 0; i < this.styleNames.length; i++) {
+          this.styleNames[i].newStyleName = this.allMarkerStyles[i].name
+        }
+
+        Fliplet.DataSources.connect(this.dataSourceId).then(connection => {
+          this.dataSourceConnection = connection
+
+          connection.find().then(records => {
+            if (!records.length) {
+              return
+            }
+
+            records.forEach(elem => {
+              let matchedStyleName = _.find(this.styleNames, function(style) {
+                return style.oldStyleName === elem.data['Marker style'];
+              });
+
+              if (matchedStyleName) {
+                elem.data['Marker style'] = matchedStyleName.newStyleName
+              }
+            })
+
+            const columns = _.keys(records[0].data)
+
+            this.styleNames = []
+            this.markersData = records
+            this.mappedMarkerData = this.mapMarkerData()
+            this.dataSourceConnection.commit(records, columns)
+            this.setupFlPanZoom()
+
+            Fliplet.Studio.emit('reload-widget-instance', this.widgetInstanceId)
+            Fliplet.Widget.toggleSaveButton(true)
+          })
+        })
+      }
+
+      this.showEditMarkerOverlay = !this.showEditMarkerOverlay
     },
     setupFlPanZoom() {
       const mapName = this.mappedMarkerData.length

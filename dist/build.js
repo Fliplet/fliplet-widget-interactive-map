@@ -101,6 +101,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__);
 
 
+Vue.filter('auth', function (value) {
+  if (!Fliplet || !Fliplet.Media || typeof Fliplet.Media.authenticate !== 'function') {
+    return value;
+  }
+
+  return Fliplet.Media.authenticate(value);
+});
 Fliplet.Widget.instance('interactive-map', function (widgetData) {
   var selector = '[data-interactive-map-id="' + widgetData.id + '"]';
   var $interactiveMap = new Vue({
@@ -123,7 +130,7 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
         pzElement: undefined,
         markerElemHandler: undefined,
         activeMap: 0,
-        activeMarker: 0,
+        activeMarker: undefined,
         imageLoaded: false,
         selectedMapData: undefined,
         selectedMarkerData: undefined,
@@ -268,12 +275,12 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
 
         var markers = this.flPanZoomInstances[this.selectedMapData.id].markers.getAll();
 
-        if (!markers.length) {
+        if (!markers.length || _.isUndefined(this.mappedMarkerData[this.activeMarker])) {
           return;
         } // Store first marker
 
 
-        var marker = markers[0]; // Find the new selected marker from flPanZoomInstance
+        var firstMarker = markers[0]; // Find the new selected marker from flPanZoomInstance
 
         this.selectedPinchMarker = _.find(markers, function (marker) {
           return marker.vars.id === _this4.mappedMarkerData[_this4.activeMarker].id;
@@ -283,10 +290,10 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
           $(this.selectedPinchMarker.getElement().get(0)).addClass('active');
         } else {
           this.activeMarker = _.findIndex(this.mappedMarkerData, function (o) {
-            return o.id == marker.vars.id;
+            return o.id == firstMarker.vars.id;
           });
           this.selectedMarkerData = this.mappedMarkerData[this.activeMarker].data;
-          $(markers[0].getElement().get(0)).addClass('active');
+          $(firstMarker.getElement().get(0)).addClass('active');
         }
       },
       addMarkers: function addMarkers(fromLoad, options) {
@@ -354,45 +361,59 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
         this.setActiveMarker(markerIndex);
       },
       selectMarkerOnStart: function selectMarkerOnStart(options) {
-        var markerIndex = undefined;
+        var _this6 = this;
 
-        if (_.hasIn(options, 'markerId')) {
+        var markerIndex = -1;
+        var markerSelector = '';
+
+        if (_.get(options, 'markerId')) {
           markerIndex = _.findIndex(this.mappedMarkerData, function (o) {
             return o.id == options.markerId;
           });
+          markerSelector = ' ' + options.markerId;
         }
 
-        if (_.hasIn(options, 'markerName')) {
+        if (_.get(options, 'markerName')) {
           markerIndex = _.findIndex(this.mappedMarkerData, function (o) {
             return o.data.name == options.markerName;
           });
+          markerSelector = ' "' + options.markerName + '"';
         }
 
-        var mapName = this.mappedMarkerData[markerIndex].data.map;
+        if (markerIndex === -1) {
+          Fliplet.UI.Toast({
+            message: 'Map marker' + markerSelector + ' not found'
+          });
+        }
 
-        var mapIndex = _.findIndex(this.maps, function (o) {
-          return o.name == mapName;
-        });
-
+        var mapIndex = markerIndex > -1 ? _.findIndex(this.maps, function (o) {
+          return o.name == _this6.mappedMarkerData[markerIndex].data.map;
+        }) : 0;
         this.setActiveMap(mapIndex, true);
-        this.setActiveMarker(markerIndex);
+        this.setActiveMarker(markerIndex > -1 ? markerIndex : 0);
       },
       selectMapOnStart: function selectMapOnStart(options) {
         var mapIndex = _.findIndex(this.maps, function (o) {
           return o.name == options.mapName;
         });
 
-        this.setActiveMap(mapIndex);
+        if (mapIndex === -1) {
+          Fliplet.UI.Toast({
+            message: 'Map' + (options.mapName ? ' "' + options.mapName + '"' : '') + ' not found'
+          });
+        }
+
+        this.setActiveMap(mapIndex > -1 ? mapIndex : 0);
       },
       removeSelectedMarker: function removeSelectedMarker() {
-        var _this6 = this;
+        var _this7 = this;
 
         this.selectedMarkerToggle = false; // Wait for animation
 
         setTimeout(function () {
           // Remove any active marker
           $('.marker').removeClass('active');
-          _this6.selectedMarkerData = undefined;
+          _this7.selectedMarkerData = undefined;
         }, 250);
       },
       closeMapsOverlay: function closeMapsOverlay() {
@@ -438,15 +459,24 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
               label: 'Details',
               action: function action() {
                 Fliplet.UI.Toast({
-                  html: error.message || error
+                  html: error.message || Fliplet.parseError(error)
                 });
               }
             }]
           });
         });
       },
+      refreshInstance: function refreshInstance() {
+        // We should refresh ZoomInstance only if we have selectedMapData
+        // If there is no selectedMapData it means that PanZoom doesn't inited
+        if (this.selectedMapData) {
+          this.flPanZoomInstances[this.selectedMapData.id].refresh();
+        } else {
+          this.setupFlPanZoom();
+        }
+      },
       init: function init() {
-        var _this7 = this;
+        var _this8 = this;
 
         var cache = {
           offline: true
@@ -457,46 +487,49 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
           uuid: widgetData.uuid,
           container: $(selector)
         }).then(function () {
-          if (_this7.getData) {
-            _this7.fetchData = _this7.getData;
+          if (_this8.getData) {
+            _this8.fetchData = _this8.getData;
 
-            if (_this7.hasOwnProperty('cache')) {
-              cache.offline = _this7.cache;
+            if (_this8.hasOwnProperty('cache')) {
+              cache.offline = _this8.cache;
             }
           }
 
-          return _this7.fetchData(cache);
+          return _this8.fetchData(cache);
         }).then(function (dsData) {
-          _this7.markersData = dsData; // Ordering and take into account numbers on the string
+          _this8.markersData = dsData; // Ordering and take into account numbers on the string
 
-          _this7.mappedMarkerData = _this7.mapMarkerData().slice().sort(function (a, b) {
+          _this8.mappedMarkerData = _this8.mapMarkerData().slice().sort(function (a, b) {
             return a.data.name.localeCompare(b.data.name, undefined, {
               numeric: true
             });
           });
           return Fliplet.Hooks.run('flInteractiveGraphicsBeforeRender', {
-            config: _this7,
+            config: _this8,
             id: widgetData.id,
             uuid: widgetData.uuid,
             container: $(selector),
-            markers: _this7.mappedMarkerData
+            markers: _this8.mappedMarkerData
           });
         }).then(function (response) {
-          _this7.searchMarkerData = _.cloneDeep(_this7.mappedMarkerData);
+          _this8.searchMarkerData = _.cloneDeep(_this8.mappedMarkerData);
 
           if (!response.length) {
-            _this7.$nextTick(_this7.setupFlPanZoom);
+            _this8.$nextTick(_this8.setupFlPanZoom);
 
             return;
           } // Check if it should start with a specific marker selected or select a map
 
 
-          if (_.hasIn(response[0], 'markerId') || _.hasIn(response[0], 'markerName')) {
-            _this7.selectMarkerOnStart(response[0]);
-          } else if (_.hasIn(response[0], 'mapName')) {
-            _this7.selectMapOnStart(response[0]);
+          if (_.get(response[0], 'markerId') || _.get(response[0], 'markerName')) {
+            _this8.selectMarkerOnStart(response[0]);
+          } else if (_.get(response[0], 'mapName')) {
+            _this8.selectMapOnStart(response[0]);
+          } else if (_.get(response[0], 'selectMarker') === false) {
+            // Ensure no marker is selected
+            _this8.setActiveMarker(-1);
           } else {
-            _this7.$nextTick(_this7.setupFlPanZoom);
+            _this8.$nextTick(_this8.setupFlPanZoom);
           }
         });
       }
@@ -505,8 +538,6 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
       var _mounted = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()(
       /*#__PURE__*/
       _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee() {
-        var _this8 = this;
-
         return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
@@ -530,12 +561,11 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
                 return this.init();
 
               case 5:
-                Fliplet.Hooks.on('appearanceChanged', function () {
-                  _this8.flPanZoomInstances[_this8.selectedMapData.id].refresh();
-                });
+                Fliplet.Hooks.on('appearanceChanged', this.refreshInstance);
+                Fliplet.Hooks.on('appearanceFileChanged', this.refreshInstance);
                 $(selector).removeClass('is-loading');
 
-              case 7:
+              case 8:
               case "end":
                 return _context.stop();
             }
@@ -1363,7 +1393,7 @@ try {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /Users/hcarneiro/Repos/Fliplet/fliplet-widget-interactive-floorplan/js/libs/build.js */"./js/libs/build.js");
+module.exports = __webpack_require__(/*! C:\Users\Yaroslav\Desktop\Fliplet\fliplet-widget-interactive-map\js\libs\build.js */"./js/libs/build.js");
 
 
 /***/ })
