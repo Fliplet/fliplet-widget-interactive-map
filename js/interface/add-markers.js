@@ -103,6 +103,7 @@ Fliplet.InteractiveMap.component('add-markers', {
           this.dataSources = _.filter(this.dataSources, (dataSource) => {
             return dataSource.id !== this.dataSourceId
           })
+
           this.resetSelectFields()
 
           this.dataSourceId = ds.id
@@ -113,13 +114,12 @@ Fliplet.InteractiveMap.component('add-markers', {
       }
     },
     initDataSourceProvider(currentDataSourceId) {
-      const $vm = this
       let dataSourceData = {
         dataSourceTitle: 'Markers data source',
         dataSourceId: currentDataSourceId,
         appId: Fliplet.Env.get('appId'),
         default: {
-          name: 'Profile data for ' + Fliplet.Env.get('appName'),
+          name: 'Markers data for ' + Fliplet.Env.get('appName'),
           entries: [],
           columns: []
         },
@@ -129,9 +129,9 @@ Fliplet.InteractiveMap.component('add-markers', {
       this.dataSourceProvider = Fliplet.Widget.open('com.fliplet.data-source-provider', {
         selector: '#dataSourceProvider',
         data: dataSourceData,
-        onEvent: function(event, dataSource) {
+        onEvent: (event, dataSource) => {
           if (event === 'dataSourceSelect') {
-            $vm.markersDataSourceChange(dataSource)
+            this.markersDataSourceChange(dataSource)
           }
         }
       })
