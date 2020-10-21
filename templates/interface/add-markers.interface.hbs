@@ -29,8 +29,6 @@
         <div>
           <template v-if="!savedData">
             <div class="col-xs-12" id="dataSourceProvider"></div>
-            {{!-- <multiselect v-model="markersDataSource" :options="dataSources" :custom-label="nameWithId" placeholder="-- Select a data source" label="name" :show-labels="false" :allow-empty="false" :show-no-results="false"></multiselect>
-            <a v-if="markersDataSource" href="#" @click.prevent="editDataSource">Edit data</a> --}}
           </template>
           <template v-else>
             You are using the data source called <strong>\{{markersDataSource.name}}</strong>.<br>
