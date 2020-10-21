@@ -56,6 +56,7 @@ Fliplet.InteractiveMap.component('add-markers', {
       markersDataSource: _.find(this.dataSources, { id: this.markersDataSourceId }),
       dataSourceId: this.markersDataSourceId,
       dataWasChanged: this.changedDataSource,
+      dataSourceProvider: null,
       dataSourceConnection: undefined,
       flPanZoomInstances: {},
       pzElement: undefined,
@@ -86,40 +87,55 @@ Fliplet.InteractiveMap.component('add-markers', {
       return this.widgetData.maps[this.selectedMapIndex]
     }
   },
-  watch: {
-    markersDataSource(ds, oldDs) {
-      // If the user is changes away from the data source the component creates
-      if (!ds || !oldDs || (ds.id !== this.dataSourceId && !this.dataWasChanged)) {
+  methods: {
+    markersDataSourceChange(ds) {
+      if (!ds || !this.markersDataSource || (ds.id !== this.dataSourceId && !this.dataWasChanged)) {
         return Fliplet.Modal.confirm({
           title: 'Changing data source',
           message: '<p>If you change the data source, the one we created for you will be deleted.<br>Are you sure you want to continue?</p>'
         }).then((result) => {
           if (!result) {
-            this.markersDataSource = oldDs
-            this.dataSourceId = oldDs.id
             return
           }
 
-          // Keep ref to delete ds later on save
-          this.dataSourceToDelete = oldDs.id
+          this.dataSourceToDelete = this.dataSourceId
+
+          this.dataSources = _.filter(this.dataSources, (dataSource) => {
+            return dataSource.id !== this.dataSourceId
+          })
+          this.resetSelectFields()
 
           this.dataSourceId = ds.id
+          this.markersDataSource.columns = ds.columns
+
           this.dataWasChanged = true
-
-          // Remove from dataSources
-          this.dataSources = _.filter(this.dataSources, (dataSource) => {
-            return dataSource.id !== oldDs.id
-          })
-
-          // Resets select fields
-          this.resetSelectFields()
         })
       }
+    },
+    initDataSourceProvider(currentDataSourceId) {
+      const $vm = this
+      let dataSourceData = {
+        dataSourceTitle: 'Markers data source',
+        dataSourceId: currentDataSourceId,
+        appId: Fliplet.Env.get('appId'),
+        default: {
+          name: 'Profile data for ' + Fliplet.Env.get('appName'),
+          entries: [],
+          columns: []
+        },
+        accessRules: []
+      }
 
-      this.dataSourceId = ds.id
-    }
-  },
-  methods: {
+      this.dataSourceProvider = Fliplet.Widget.open('com.fliplet.data-source-provider', {
+        selector: '#dataSourceProvider',
+        data: dataSourceData,
+        onEvent: function(event, dataSource) {
+          if (event === 'dataSourceSelect') {
+            $vm.markersDataSourceChange(dataSource)
+          }
+        }
+      })
+    },
     resetSelectFields() {
       this.markerNameColumn = ''
       this.markerMapColumn = ''
@@ -214,7 +230,11 @@ Fliplet.InteractiveMap.component('add-markers', {
     },
     configureDataSources() {
       this.savedData = false
+
       Fliplet.Studio.emit('widget-mode', 'normal')
+      this.$nextTick(() => {
+        this.initDataSourceProvider(this.dataSourceId)
+      })
     },
     editDataSource() {
       Fliplet.Studio.emit('overlay', {
@@ -784,4 +804,4 @@ Fliplet.InteractiveMap.component('add-markers', {
     Fliplet.InteractiveMap.off('add-markers-save', this.saveData)
     Fliplet.InteractiveMap.off('marker-panel-settings-changed', this.onMarkerPanelSettingChanged)
   }
-});
+})
