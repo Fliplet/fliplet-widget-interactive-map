@@ -352,9 +352,9 @@ Fliplet.InteractiveMap.component('add-markers', {
       this.savedData = false;
       Fliplet.Studio.emit('widget-mode', 'normal');
       this.$nextTick(function () {
-        if (_this5.dataSourceProvider !== null) return;
-
-        _this5.initDataSourceProvider(_this5.dataSourceId);
+        if (!_this5.dataSourceProvider) {
+          return _this5.initDataSourceProvider(_this5.dataSourceId);
+        }
       });
     },
     editDataSource: function editDataSource() {
