@@ -26,13 +26,9 @@
   <div class="settings-holder" v-bind:class="{ 'col-xs-12 less-bottom-padding': !savedData, 'col-xs-4 with-border': savedData }">
     <div class="marker-settings-wrapper">
       <div class="form-group clearfix">
-        <div class="col-xs-12 control-label">
-          <label>Markers data source</label>
-        </div>
-        <div class="col-xs-12">
+        <div>
           <template v-if="!savedData">
-            <multiselect v-model="markersDataSource" :options="dataSources" :custom-label="nameWithId" placeholder="-- Select a data source" label="name" :show-labels="false" :allow-empty="false" :show-no-results="false"></multiselect>
-            <a v-if="markersDataSource" href="#" @click.prevent="editDataSource">Edit data</a>
+            <div class="col-xs-12" id="dataSourceProvider"></div>
           </template>
           <template v-else>
             You are using the data source called <strong>\{{markersDataSource.name}}</strong>.<br>

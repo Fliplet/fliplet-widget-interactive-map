@@ -59,6 +59,11 @@ header .title-holder p {
   text-align: center;
 }
 
+.fl-widget-provider {
+  width: 100%;
+  border: none;
+}
+
 .app-content {
   height: calc(100% - 27px);
   overflow-y: auto;
