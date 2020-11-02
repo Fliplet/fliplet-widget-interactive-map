@@ -210,15 +210,14 @@ Fliplet.InteractiveMap.component('add-markers', {
           _this.dataSources = _.filter(_this.dataSources, function (dataSource) {
             return dataSource.id !== _this.dataSourceId;
           });
+
+          _this.resetSelectFields();
+
           _this.dataSourceId = ds.id;
           _this.markersDataSource.columns = ds.columns;
           _this.dataWasChanged = true;
-
-          _this.resetSelectFields();
         });
       }
-
-      this.dataSourceId = ds.id;
     },
     initDataSourceProvider: function initDataSourceProvider(currentDataSourceId) {
       var _this2 = this;
@@ -232,11 +231,7 @@ Fliplet.InteractiveMap.component('add-markers', {
           entries: [],
           columns: []
         },
-        accessRules: [{
-          allow: 'all',
-          enabled: true,
-          type: ['select']
-        }]
+        accessRules: []
       };
       this.dataSourceProvider = Fliplet.Widget.open('com.fliplet.data-source-provider', {
         selector: '#dataSourceProvider',
