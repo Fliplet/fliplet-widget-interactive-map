@@ -106,7 +106,6 @@ Fliplet.InteractiveMap.component('add-markers', {
 
           this.dataSourceId = ds.id
           this.markersDataSource.columns = ds.columns
-
           this.dataWasChanged = true
 
           this.resetSelectFields()
