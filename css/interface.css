@@ -74,15 +74,6 @@ header .title-holder p {
   opacity: 0.5;
 }
 
-header {
-  padding-bottom: 0.5em;
-}
-
-.header-wrapper p {
-  flex: none;
-  margin: 0;
-}
-
 /* ACCORDION */
 .map-panels-holder,
 .map-markers-holder {
