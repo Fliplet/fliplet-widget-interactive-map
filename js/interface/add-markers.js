@@ -104,14 +104,15 @@ Fliplet.InteractiveMap.component('add-markers', {
             return dataSource.id !== this.dataSourceId
           })
 
-          this.resetSelectFields()
-
           this.dataSourceId = ds.id
           this.markersDataSource.columns = ds.columns
-
           this.dataWasChanged = true
+
+          this.resetSelectFields()
         })
       }
+
+      this.dataSourceId = ds.id
     },
     initDataSourceProvider(currentDataSourceId) {
       let dataSourceData = {
@@ -123,7 +124,15 @@ Fliplet.InteractiveMap.component('add-markers', {
           entries: [],
           columns: []
         },
-        accessRules: []
+        accessRules: [
+          {
+            allow: 'all',
+            enabled: true,
+            type: [
+              'select'
+            ]
+          }
+        ]
       }
 
       this.dataSourceProvider = Fliplet.Widget.open('com.fliplet.data-source-provider', {
@@ -233,7 +242,9 @@ Fliplet.InteractiveMap.component('add-markers', {
 
       Fliplet.Studio.emit('widget-mode', 'normal')
       this.$nextTick(() => {
-        this.initDataSourceProvider(this.dataSourceId)
+        if (!this.dataSourceProvider) {
+          this.initDataSourceProvider(this.dataSourceId)
+        }
       })
     },
     editDataSource() {
