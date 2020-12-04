@@ -68,7 +68,7 @@
         <p>Add markers</p>
       </div>
     </header>
-    <div class="add-markers-wrapper">
+    <div ref="add-markers-wrapper" class="add-markers-wrapper">
       <component is="add-markers" v-bind="{
         widgetData: settings,
         dataSources: dataSources,
@@ -83,7 +83,7 @@
     </div>
   </main>
 
-  <div v-if="hasError || hasErrorOnSave" class="errors-holder">
+  <div v-if="hasError || hasErrorOnSave" ref="errors-holder" class="errors-holder">
     <p v-if="hasError" class="text-danger">\{{ hasError.message }}</p>
     <p v-if="hasErrorOnSave" class="text-danger">\{{ hasErrorOnSave.message }}</p>
   </div>

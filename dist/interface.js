@@ -150,6 +150,14 @@ var app = new Vue({
       showAddMarkersUI: false
     };
   },
+  watch: {
+    hasError: function hasError() {
+      this.changeWrapperMarginByErrorsHolderHeight();
+    },
+    hasErrorOnSave: function hasErrorOnSave() {
+      this.changeWrapperMarginByErrorsHolderHeight();
+    }
+  },
   methods: {
     loadDataSources: function loadDataSources() {
       return Fliplet.DataSources.get({
@@ -444,13 +452,25 @@ var app = new Vue({
           Fliplet.Studio.emit('reload-widget-instance', widgetId);
         }
       });
+    },
+    changeWrapperMarginByErrorsHolderHeight: function changeWrapperMarginByErrorsHolderHeight() {
+      var _this5 = this;
+
+      this.$nextTick(function () {
+        var wrapper = _this5.$refs['add-markers-wrapper'];
+        var holder = _this5.$refs['errors-holder'];
+
+        if (wrapper && holder) {
+          wrapper.style.paddingBottom = holder.clientHeight + 'px';
+        }
+      });
     }
   },
   created: function () {
     var _created = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()(
     /*#__PURE__*/
     _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee() {
-      var _this5 = this;
+      var _this6 = this;
 
       return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee$(_context) {
         while (1) {
@@ -478,7 +498,7 @@ var app = new Vue({
               $(selector).removeClass('is-loading');
               Fliplet.Studio.onMessage(function (event) {
                 if (_.get(event, 'data.event') === 'overlay-close' && _.get(event.data, 'data.dataSourceId')) {
-                  _this5.loadDataSources();
+                  _this6.loadDataSources();
                 }
               });
               Fliplet.Widget.onSaveRequest(function () {
@@ -496,7 +516,7 @@ var app = new Vue({
                 Fliplet.InteractiveMap.emit('markers-save');
                 Fliplet.InteractiveMap.emit('add-markers-save');
 
-                _this5.prepareToSaveData();
+                _this6.prepareToSaveData();
               });
 
             case 12:

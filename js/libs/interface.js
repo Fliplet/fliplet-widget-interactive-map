@@ -34,6 +34,14 @@ const app = new Vue({
       showAddMarkersUI: false
     }
   },
+  watch: {
+    hasError() {
+      this.changeWrapperMarginByErrorsHolderHeight();
+    },
+    hasErrorOnSave() {
+      this.changeWrapperMarginByErrorsHolderHeight();
+    }
+  },
   methods: {
     loadDataSources() {
       return Fliplet.DataSources.get({
@@ -327,6 +335,15 @@ const app = new Vue({
             Fliplet.Studio.emit('reload-widget-instance', widgetId)
           }
         })
+    },
+    changeWrapperMarginByErrorsHolderHeight() {
+      this.$nextTick(() => {
+        const wrapper = this.$refs['add-markers-wrapper'];
+        const holder = this.$refs['errors-holder'];
+        if (wrapper && holder) {
+          wrapper.style.paddingBottom = (holder.clientHeight + 'px');
+        }
+      });
     }
   },
   async created() {
