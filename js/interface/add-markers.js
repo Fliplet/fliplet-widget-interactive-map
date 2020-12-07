@@ -283,6 +283,8 @@ Fliplet.InteractiveMap.component('add-markers', {
       }
 
       this.dataSourceId = this.markersDataSource.id
+      this.dataSourceProvider = null
+
       this.reloadData()
         .then(() => {
           this.savedData = true

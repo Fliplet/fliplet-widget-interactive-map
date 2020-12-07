@@ -358,7 +358,7 @@ header .title-holder p {
 
 .settings-holder {
   padding: 20px 15px 77px;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .settings-holder .less-bottom-padding {
