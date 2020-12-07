@@ -340,8 +340,9 @@ const app = new Vue({
       this.$nextTick(() => {
         const wrapper = this.$refs['add-markers-wrapper'];
         const holder = this.$refs['errors-holder'];
+
         if (wrapper && holder) {
-          wrapper.style.paddingBottom = (holder.clientHeight + 'px');
+          wrapper.style.paddingBottom = `${holder.clientHeight}px`;
         }
       });
     }

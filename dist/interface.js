@@ -461,7 +461,7 @@ var app = new Vue({
         var holder = _this5.$refs['errors-holder'];
 
         if (wrapper && holder) {
-          wrapper.style.paddingBottom = holder.clientHeight + 'px';
+          wrapper.style.paddingBottom = "".concat(holder.clientHeight, "px");
         }
       });
     }
