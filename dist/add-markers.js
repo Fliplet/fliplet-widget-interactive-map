@@ -218,7 +218,7 @@ Fliplet.InteractiveMap.component('add-markers', {
         });
       }
 
-      this.dataSourceId = ds.id;
+      this.markersDataSource.id = ds.id;
     },
     initDataSourceProvider: function initDataSourceProvider(currentDataSourceId) {
       var _this2 = this;
@@ -1791,7 +1791,7 @@ try {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\Dev\Documents\Fliplet\fliplet-widget-interactive-map\js\interface\add-markers.js */"./js/interface/add-markers.js");
+module.exports = __webpack_require__(/*! L:\_MyWorkProjects\Fliplet\fliplet-widget-interactive-map\js\interface\add-markers.js */"./js/interface/add-markers.js");
 
 
 /***/ })

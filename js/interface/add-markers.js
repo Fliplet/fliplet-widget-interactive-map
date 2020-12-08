@@ -112,7 +112,7 @@ Fliplet.InteractiveMap.component('add-markers', {
         })
       }
 
-      this.dataSourceId = ds.id
+      this.markersDataSource.id = ds.id
     },
     initDataSourceProvider(currentDataSourceId) {
       let dataSourceData = {
