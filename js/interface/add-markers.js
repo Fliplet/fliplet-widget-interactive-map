@@ -105,6 +105,7 @@ Fliplet.InteractiveMap.component('add-markers', {
           })
 
           this.dataSourceId = ds.id
+          this.markersDataSource.name = ds.name
           this.markersDataSource.columns = ds.columns
           this.dataWasChanged = true
 
@@ -112,7 +113,8 @@ Fliplet.InteractiveMap.component('add-markers', {
         })
       }
 
-      this.markersDataSource.id = ds.id
+      this.markersDataSource.name = ds.name
+      this.dataSourceId = ds.id
     },
     initDataSourceProvider(currentDataSourceId) {
       let dataSourceData = {
@@ -282,7 +284,6 @@ Fliplet.InteractiveMap.component('add-markers', {
         return
       }
 
-      this.dataSourceId = this.markersDataSource.id
       this.dataSourceProvider = null
 
       this.reloadData()
