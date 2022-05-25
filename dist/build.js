@@ -110,486 +110,488 @@ Vue.filter('auth', function (value) {
 });
 Fliplet.Widget.instance('interactive-map', function (widgetData) {
   var selector = '[data-interactive-map-id="' + widgetData.id + '"]';
-  var $interactiveMap = new Vue({
-    el: $(selector)[0],
-    i18n: Fliplet.Locale.plugins.vue(),
-    data: function data() {
-      return {
-        containsData: !!(widgetData.maps && widgetData.maps.length),
-        maps: widgetData.maps && widgetData.maps.length ? widgetData.maps : [],
-        markerStyles: widgetData.markers && widgetData.markers.length ? widgetData.markers : [],
-        markersDataSourceId: widgetData.markersDataSourceId || undefined,
-        markerNameColumn: widgetData.markerNameColumn || undefined,
-        markerMapColumn: widgetData.markerMapColumn || undefined,
-        markerTypeColumn: widgetData.markerTypeColumn || undefined,
-        markerXPositionColumn: widgetData.markerXPositionColumn || undefined,
-        markerYPositionColumn: widgetData.markerYPositionColumn || undefined,
-        markersData: undefined,
-        mappedMarkerData: [],
-        searchMarkerData: undefined,
-        flPanZoomInstances: {},
-        pzElement: undefined,
-        markerElemHandler: undefined,
-        activeMap: 0,
-        activeMarker: undefined,
-        imageLoaded: false,
-        selectedMapData: undefined,
-        selectedMarkerData: undefined,
-        selectedMarkerToggle: false,
-        selectedPinchMarker: undefined,
-        searchTimeout: null,
-        searchValue: '',
-        noSearchResults: false
-      };
-    },
-    watch: {
-      searchValue: function searchValue() {
-        this.noSearchResults = false;
+  Fliplet().then(function () {
+    var $interactiveMap = new Vue({
+      el: $(selector)[0],
+      i18n: Fliplet.Locale.plugins.vue(),
+      data: function data() {
+        return {
+          containsData: !!(widgetData.maps && widgetData.maps.length),
+          maps: widgetData.maps && widgetData.maps.length ? widgetData.maps : [],
+          markerStyles: widgetData.markers && widgetData.markers.length ? widgetData.markers : [],
+          markersDataSourceId: widgetData.markersDataSourceId || undefined,
+          markerNameColumn: widgetData.markerNameColumn || undefined,
+          markerMapColumn: widgetData.markerMapColumn || undefined,
+          markerTypeColumn: widgetData.markerTypeColumn || undefined,
+          markerXPositionColumn: widgetData.markerXPositionColumn || undefined,
+          markerYPositionColumn: widgetData.markerYPositionColumn || undefined,
+          markersData: undefined,
+          mappedMarkerData: [],
+          searchMarkerData: undefined,
+          flPanZoomInstances: {},
+          pzElement: undefined,
+          markerElemHandler: undefined,
+          activeMap: 0,
+          activeMarker: undefined,
+          imageLoaded: false,
+          selectedMapData: undefined,
+          selectedMarkerData: undefined,
+          selectedMarkerToggle: false,
+          selectedPinchMarker: undefined,
+          searchTimeout: null,
+          searchValue: '',
+          noSearchResults: false
+        };
+      },
+      watch: {
+        searchValue: function searchValue() {
+          this.noSearchResults = false;
 
+          if (this.searchTimeout) {
+            clearTimeout(this.searchTimeout);
+            this.searchTimeout = null;
+          }
+
+          this.searchTimeout = setTimeout(this.filterMarkers, 500);
+        }
+      },
+      methods: {
+        filterMarkers: function filterMarkers() {
+          var _this = this;
+
+          if (!this.searchValue) {
+            this.searchMarkerData = _.cloneDeep(this.mappedMarkerData);
+            return;
+          }
+
+          this.searchMarkerData = _.filter(this.mappedMarkerData, function (marker) {
+            return _.some(['name', 'map'], function (key) {
+              return marker.data[key] && marker.data[key].toString().toLowerCase().indexOf(_this.searchValue.toLowerCase()) > -1;
+            });
+          });
+
+          if (!this.searchMarkerData.length) {
+            this.noSearchResults = true;
+          }
+        },
+        clearSearch: function clearSearch() {
+          this.searchValue = '';
+        },
+        mapMarkerData: function mapMarkerData() {
+          var _this2 = this;
+
+          var newMarkerData = this.markersData.map(function (marker) {
+            var markerData = _.find(_this2.markerStyles, {
+              name: marker.data[_this2.markerTypeColumn]
+            });
+
+            return {
+              id: marker.id,
+              data: {
+                name: marker.data[_this2.markerNameColumn],
+                map: marker.data[_this2.markerMapColumn],
+                type: marker.data[_this2.markerTypeColumn],
+                icon: markerData ? markerData.icon : '',
+                color: markerData ? markerData.color : '#333333',
+                size: markerData ? markerData.size : '24px',
+                positionX: marker.data[_this2.markerXPositionColumn],
+                positionY: marker.data[_this2.markerYPositionColumn]
+              }
+            };
+          }); // Check if markers have all the necessary info to be shown
+
+          if (!this.validateMarkers(newMarkerData)) {
+            Fliplet.UI.Toast({
+              message: T('widgets.interactiveMap.errorToast.markersWithoutInformation')
+            });
+          }
+
+          return newMarkerData;
+        },
+        validateMarkers: function validateMarkers(markersData) {
+          if (!markersData || !markersData.length) {
+            return true;
+          }
+
+          var missingInfo = markersData.some(function (marker) {
+            var results = [];
+
+            for (var key in marker.data) {
+              if (!marker.data[key] || marker.data == '') {
+                results.push(false);
+                continue;
+              }
+            }
+
+            if (results.length) {
+              return false;
+            }
+
+            return true;
+          });
+          return missingInfo;
+        },
+        setupFlPanZoom: function setupFlPanZoom() {
+          var _this3 = this;
+
+          this.selectedMapData = this.maps[this.activeMap];
+          this.selectedMarkerData = this.mappedMarkerData[this.activeMarker] ? this.mappedMarkerData[this.activeMarker].data : undefined;
+          this.selectedMarkerToggle = !!this.selectedMarkerData; // Check if there is a map to initialize
+
+          if (!this.selectedMapData || !this.selectedMapData.id) {
+            return Fliplet.UI.Toast({
+              message: T('widgets.interactiveMap.errorToast.mapNotFound')
+            });
+          }
+
+          this.pzElement = $('#map-' + this.selectedMapData.id);
+
+          if (_.isEmpty(this.flPanZoomInstances) || !this.flPanZoomInstances[this.selectedMapData.id]) {
+            this.imageLoaded = false;
+            this.flPanZoomInstances[this.selectedMapData.id] = Fliplet.UI.PanZoom.create(this.pzElement, {
+              maxZoom: 10,
+              zoomStep: 0.25,
+              doubleTapZoom: 3,
+              animDuration: 0.1,
+              allowMouseWheelZoom: false
+            });
+          } else {
+            this.flPanZoomInstances[this.selectedMapData.id].markers.removeAll();
+            this.flPanZoomInstances[this.selectedMapData.id].zoom(0, 0);
+          }
+
+          this.flPanZoomInstances[this.selectedMapData.id].on('mapImageLoaded', function () {
+            _this3.imageLoaded = true;
+          });
+
+          if (this.mappedMarkerData.length) {
+            this.addMarkers(true);
+            this.selectPinchMarker();
+          }
+        },
+        selectPinchMarker: function selectPinchMarker() {
+          var _this4 = this;
+
+          // Remove any active marker
+          $('.marker').removeClass('active'); // Get markers
+
+          var markers = this.flPanZoomInstances[this.selectedMapData.id].markers.getAll();
+
+          if (!markers.length || _.isUndefined(this.mappedMarkerData[this.activeMarker])) {
+            return;
+          } // Store first marker
+
+
+          var firstMarker = markers[0]; // Find the new selected marker from flPanZoomInstance
+
+          this.selectedPinchMarker = _.find(markers, function (marker) {
+            return marker.vars.id === _this4.mappedMarkerData[_this4.activeMarker].id;
+          }); // Apply class active
+
+          if (this.selectedPinchMarker) {
+            $(this.selectedPinchMarker.getElement().get(0)).addClass('active');
+          } else {
+            this.activeMarker = _.findIndex(this.mappedMarkerData, function (o) {
+              return o.id == firstMarker.vars.id;
+            });
+            this.selectedMarkerData = this.mappedMarkerData[this.activeMarker].data;
+            $(firstMarker.getElement().get(0)).addClass('active');
+          }
+        },
+        addMarkers: function addMarkers(fromLoad, options) {
+          var _this5 = this;
+
+          var createdMarkers = [];
+          this.mappedMarkerData.forEach(function (marker, index) {
+            if (marker.data.map === _this5.selectedMapData.name) {
+              var markerElem = $("<div id='" + marker.id + "' class='marker' data-name='" + marker.data.name + "' style='left: -15px; top: -15px; position: absolute; font-size: " + marker.data.size + ";'><i class='" + marker.data.icon + "' style='color: " + marker.data.color + "; font-size: " + marker.data.size + ";'></i><div class='active-state'><i class='" + marker.data.icon + "' style='color: " + marker.data.color + ";'></i></div></div>");
+              _this5.markerElemHandler = new Hammer(markerElem.get(0));
+
+              _this5.markerElemHandler.on('tap', _this5.onMarkerHandler);
+
+              createdMarkers.push(Fliplet.UI.PanZoom.Markers.create(markerElem, {
+                x: marker.data.positionX,
+                y: marker.data.positionY,
+                name: marker.data.name,
+                id: marker.id
+              }));
+            }
+          });
+          this.flPanZoomInstances[this.selectedMapData.id].markers.set(createdMarkers);
+        },
+        onMarkerHandler: function onMarkerHandler(e) {
+          var markers = this.flPanZoomInstances[this.selectedMapData.id].markers.getAll();
+          var id = $(e.target).attr('id');
+
+          var marker = _.find(markers, function (o) {
+            return o.vars.id == id;
+          });
+
+          this.activeMarker = _.findIndex(this.mappedMarkerData, function (o) {
+            return o.id == marker.vars.id;
+          });
+          this.selectPinchMarker();
+          this.selectedMarkerData = this.mappedMarkerData[this.activeMarker].data;
+          this.selectedMarkerToggle = true;
+        },
+        setActiveMap: function setActiveMap(mapIndex, fromSearch) {
+          if (this.activeMap !== mapIndex) {
+            this.activeMap = mapIndex;
+          }
+
+          if (!fromSearch) {
+            this.setupFlPanZoom();
+          }
+
+          this.toggleMapOverlay(false);
+        },
+        setActiveMarker: function setActiveMarker(markerIndex) {
+          this.activeMarker = markerIndex;
+          this.setupFlPanZoom();
+          this.toggleSearchOverlay(false);
+        },
+        selectedMarker: function selectedMarker(markerData) {
+          var mapIndex = _.findIndex(this.maps, function (o) {
+            return o.name == markerData.data.map;
+          });
+
+          var markerIndex = _.findIndex(this.mappedMarkerData, function (o) {
+            return o.id == markerData.id;
+          });
+
+          this.setActiveMap(mapIndex, true);
+          this.setActiveMarker(markerIndex);
+        },
+        selectMarkerOnStart: function selectMarkerOnStart(options) {
+          var _this6 = this;
+
+          var markerIndex = -1;
+          var markerSelector = '';
+
+          if (_.get(options, 'markerId')) {
+            markerIndex = _.findIndex(this.mappedMarkerData, function (o) {
+              return o.id == options.markerId;
+            });
+            markerSelector = ' ' + options.markerId;
+          }
+
+          if (_.get(options, 'markerName')) {
+            markerIndex = _.findIndex(this.mappedMarkerData, function (o) {
+              return o.data.name == options.markerName;
+            });
+            markerSelector = ' "' + options.markerName + '"';
+          }
+
+          if (markerIndex === -1) {
+            Fliplet.UI.Toast({
+              message: T('widgets.interactiveMap.errorToast.selectedMarkerNotFound', {
+                markerSelector: markerSelector
+              })
+            });
+          }
+
+          var mapIndex = markerIndex > -1 ? _.findIndex(this.maps, function (o) {
+            return o.name == _this6.mappedMarkerData[markerIndex].data.map;
+          }) : 0;
+          this.setActiveMap(mapIndex, true);
+          this.setActiveMarker(markerIndex > -1 ? markerIndex : 0);
+        },
+        selectMapOnStart: function selectMapOnStart(options) {
+          var mapIndex = _.findIndex(this.maps, function (o) {
+            return o.name == options.mapName;
+          });
+
+          if (mapIndex === -1) {
+            Fliplet.UI.Toast({
+              message: T('widgets.interactiveMap.errorToast.selectedMapNotFound', {
+                mapName: options.mapName ? '"' + options.mapName + '"' : ''
+              })
+            });
+          }
+
+          this.setActiveMap(mapIndex > -1 ? mapIndex : 0);
+        },
+        removeSelectedMarker: function removeSelectedMarker() {
+          var _this7 = this;
+
+          this.selectedMarkerToggle = false; // Wait for animation
+
+          setTimeout(function () {
+            // Remove any active marker
+            $('.marker').removeClass('active');
+            _this7.selectedMarkerData = undefined;
+          }, 250);
+        },
+        closeMapsOverlay: function closeMapsOverlay() {
+          this.toggleMapOverlay(false);
+        },
+        toggleMapOverlay: function toggleMapOverlay(forceOpen) {
+          if (typeof forceOpen === 'undefined') {
+            $(selector).find('.interactive-maps-overlay').toggleClass('overlay-open');
+            return;
+          }
+
+          $(selector).find('.interactive-maps-overlay')[forceOpen ? 'addClass' : 'removeClass']('overlay-open');
+        },
+        closeSearchOverlay: function closeSearchOverlay() {
+          this.toggleSearchOverlay(false);
+        },
+        toggleSearchOverlay: function toggleSearchOverlay(forceOpen) {
+          this.searchValue = '';
+
+          if (typeof forceOpen === 'undefined') {
+            $(selector).find('.interactive-maps-search-overlay').toggleClass('overlay-open');
+            return;
+          }
+
+          $(selector).find('.interactive-maps-search-overlay')[forceOpen ? 'addClass' : 'removeClass']('overlay-open');
+        },
+        onLabelClick: function onLabelClick() {
+          Fliplet.Hooks.run('flInteractiveGraphicsLabelClick', {
+            selectedMarker: this.selectedMarkerData,
+            config: this,
+            id: widgetData.id,
+            uuid: widgetData.uuid,
+            container: $(selector)
+          });
+        },
+        fetchData: function fetchData(options) {
+          return Fliplet.DataSources.connect(this.markersDataSourceId, options).then(function (connection) {
+            return connection.find();
+          })["catch"](function (error) {
+            Fliplet.UI.Toast({
+              message: T('widgets.interactiveMap.errorToast.loadFailed.title'),
+              actions: [{
+                label: T('widgets.interactiveMap.errorToast.loadFailed.label'),
+                action: function action() {
+                  Fliplet.UI.Toast({
+                    html: error.message || Fliplet.parseError(error)
+                  });
+                }
+              }]
+            });
+          });
+        },
+        refreshInstance: function refreshInstance() {
+          // We should refresh ZoomInstance only if we have selectedMapData
+          // If there is no selectedMapData it means that PanZoom doesn't inited
+          if (this.selectedMapData) {
+            this.flPanZoomInstances[this.selectedMapData.id].refresh();
+          } else {
+            this.setupFlPanZoom();
+          }
+        },
+        init: function init() {
+          var _this8 = this;
+
+          var cache = {
+            offline: true
+          };
+          return Fliplet.Hooks.run('flInteractiveGraphicsBeforeGetData', {
+            config: this,
+            id: widgetData.id,
+            uuid: widgetData.uuid,
+            container: $(selector)
+          }).then(function () {
+            if (_this8.getData) {
+              _this8.fetchData = _this8.getData;
+
+              if (_this8.hasOwnProperty('cache')) {
+                cache.offline = _this8.cache;
+              }
+            }
+
+            return _this8.fetchData(cache);
+          }).then(function (dsData) {
+            _this8.markersData = dsData; // Ordering and take into account numbers on the string
+
+            _this8.mappedMarkerData = _this8.mapMarkerData().slice().sort(function (a, b) {
+              return a.data.name.localeCompare(b.data.name, undefined, {
+                numeric: true
+              });
+            });
+            return Fliplet.Hooks.run('flInteractiveGraphicsBeforeRender', {
+              config: _this8,
+              id: widgetData.id,
+              uuid: widgetData.uuid,
+              container: $(selector),
+              markers: _this8.mappedMarkerData
+            });
+          }).then(function (response) {
+            _this8.searchMarkerData = _.cloneDeep(_this8.mappedMarkerData);
+
+            if (!response.length) {
+              _this8.$nextTick(_this8.setupFlPanZoom);
+
+              return;
+            } // Check if it should start with a specific marker selected or select a map
+
+
+            if (_.get(response[0], 'markerId') || _.get(response[0], 'markerName')) {
+              _this8.selectMarkerOnStart(response[0]);
+            } else if (_.get(response[0], 'mapName')) {
+              _this8.selectMapOnStart(response[0]);
+            } else if (_.get(response[0], 'selectMarker') === false) {
+              // Ensure no marker is selected
+              _this8.setActiveMarker(-1);
+            } else {
+              _this8.$nextTick(_this8.setupFlPanZoom);
+            }
+          });
+        }
+      },
+      mounted: function () {
+        var _mounted = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()(
+        /*#__PURE__*/
+        _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee() {
+          return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee$(_context) {
+            while (1) {
+              switch (_context.prev = _context.next) {
+                case 0:
+                  if (!this.containsData) {
+                    _context.next = 5;
+                    break;
+                  }
+
+                  if (!(!this.markersDataSourceId || !this.markerNameColumn || !this.markerMapColumn || !this.markerTypeColumn || !this.markerXPositionColumn || !this.markerYPositionColumn)) {
+                    _context.next = 3;
+                    break;
+                  }
+
+                  return _context.abrupt("return", Fliplet.UI.Toast({
+                    message: T('widgets.interactiveMap.errorToast.dataSourceMisconfigured')
+                  }));
+
+                case 3:
+                  _context.next = 5;
+                  return this.init();
+
+                case 5:
+                  Fliplet.Hooks.on('appearanceChanged', this.refreshInstance);
+                  Fliplet.Hooks.on('appearanceFileChanged', this.refreshInstance);
+                  $(selector).removeClass('is-loading');
+
+                case 8:
+                case "end":
+                  return _context.stop();
+              }
+            }
+          }, _callee, this);
+        }));
+
+        function mounted() {
+          return _mounted.apply(this, arguments);
+        }
+
+        return mounted;
+      }(),
+      beforeDestroy: function beforeDestroy() {
         if (this.searchTimeout) {
           clearTimeout(this.searchTimeout);
           this.searchTimeout = null;
         }
-
-        this.searchTimeout = setTimeout(this.filterMarkers, 500);
       }
-    },
-    methods: {
-      filterMarkers: function filterMarkers() {
-        var _this = this;
-
-        if (!this.searchValue) {
-          this.searchMarkerData = _.cloneDeep(this.mappedMarkerData);
-          return;
-        }
-
-        this.searchMarkerData = _.filter(this.mappedMarkerData, function (marker) {
-          return _.some(['name', 'map'], function (key) {
-            return marker.data[key] && marker.data[key].toString().toLowerCase().indexOf(_this.searchValue.toLowerCase()) > -1;
-          });
-        });
-
-        if (!this.searchMarkerData.length) {
-          this.noSearchResults = true;
-        }
-      },
-      clearSearch: function clearSearch() {
-        this.searchValue = '';
-      },
-      mapMarkerData: function mapMarkerData() {
-        var _this2 = this;
-
-        var newMarkerData = this.markersData.map(function (marker) {
-          var markerData = _.find(_this2.markerStyles, {
-            name: marker.data[_this2.markerTypeColumn]
-          });
-
-          return {
-            id: marker.id,
-            data: {
-              name: marker.data[_this2.markerNameColumn],
-              map: marker.data[_this2.markerMapColumn],
-              type: marker.data[_this2.markerTypeColumn],
-              icon: markerData ? markerData.icon : '',
-              color: markerData ? markerData.color : '#333333',
-              size: markerData ? markerData.size : '24px',
-              positionX: marker.data[_this2.markerXPositionColumn],
-              positionY: marker.data[_this2.markerYPositionColumn]
-            }
-          };
-        }); // Check if markers have all the necessary info to be shown
-
-        if (!this.validateMarkers(newMarkerData)) {
-          Fliplet.UI.Toast({
-            message: T('widgets.interactiveMap.errorToast.markersWithoutInformation')
-          });
-        }
-
-        return newMarkerData;
-      },
-      validateMarkers: function validateMarkers(markersData) {
-        if (!markersData || !markersData.length) {
-          return true;
-        }
-
-        var missingInfo = markersData.some(function (marker) {
-          var results = [];
-
-          for (var key in marker.data) {
-            if (!marker.data[key] || marker.data == '') {
-              results.push(false);
-              continue;
-            }
-          }
-
-          if (results.length) {
-            return false;
-          }
-
-          return true;
-        });
-        return missingInfo;
-      },
-      setupFlPanZoom: function setupFlPanZoom() {
-        var _this3 = this;
-
-        this.selectedMapData = this.maps[this.activeMap];
-        this.selectedMarkerData = this.mappedMarkerData[this.activeMarker] ? this.mappedMarkerData[this.activeMarker].data : undefined;
-        this.selectedMarkerToggle = !!this.selectedMarkerData; // Check if there is a map to initialize
-
-        if (!this.selectedMapData || !this.selectedMapData.id) {
-          return Fliplet.UI.Toast({
-            message: T('widgets.interactiveMap.errorToast.mapNotFound')
-          });
-        }
-
-        this.pzElement = $('#map-' + this.selectedMapData.id);
-
-        if (_.isEmpty(this.flPanZoomInstances) || !this.flPanZoomInstances[this.selectedMapData.id]) {
-          this.imageLoaded = false;
-          this.flPanZoomInstances[this.selectedMapData.id] = Fliplet.UI.PanZoom.create(this.pzElement, {
-            maxZoom: 10,
-            zoomStep: 0.25,
-            doubleTapZoom: 3,
-            animDuration: 0.1,
-            allowMouseWheelZoom: false
-          });
-        } else {
-          this.flPanZoomInstances[this.selectedMapData.id].markers.removeAll();
-          this.flPanZoomInstances[this.selectedMapData.id].zoom(0, 0);
-        }
-
-        this.flPanZoomInstances[this.selectedMapData.id].on('mapImageLoaded', function () {
-          _this3.imageLoaded = true;
-        });
-
-        if (this.mappedMarkerData.length) {
-          this.addMarkers(true);
-          this.selectPinchMarker();
-        }
-      },
-      selectPinchMarker: function selectPinchMarker() {
-        var _this4 = this;
-
-        // Remove any active marker
-        $('.marker').removeClass('active'); // Get markers
-
-        var markers = this.flPanZoomInstances[this.selectedMapData.id].markers.getAll();
-
-        if (!markers.length || _.isUndefined(this.mappedMarkerData[this.activeMarker])) {
-          return;
-        } // Store first marker
-
-
-        var firstMarker = markers[0]; // Find the new selected marker from flPanZoomInstance
-
-        this.selectedPinchMarker = _.find(markers, function (marker) {
-          return marker.vars.id === _this4.mappedMarkerData[_this4.activeMarker].id;
-        }); // Apply class active
-
-        if (this.selectedPinchMarker) {
-          $(this.selectedPinchMarker.getElement().get(0)).addClass('active');
-        } else {
-          this.activeMarker = _.findIndex(this.mappedMarkerData, function (o) {
-            return o.id == firstMarker.vars.id;
-          });
-          this.selectedMarkerData = this.mappedMarkerData[this.activeMarker].data;
-          $(firstMarker.getElement().get(0)).addClass('active');
-        }
-      },
-      addMarkers: function addMarkers(fromLoad, options) {
-        var _this5 = this;
-
-        var createdMarkers = [];
-        this.mappedMarkerData.forEach(function (marker, index) {
-          if (marker.data.map === _this5.selectedMapData.name) {
-            var markerElem = $("<div id='" + marker.id + "' class='marker' data-name='" + marker.data.name + "' style='left: -15px; top: -15px; position: absolute; font-size: " + marker.data.size + ";'><i class='" + marker.data.icon + "' style='color: " + marker.data.color + "; font-size: " + marker.data.size + ";'></i><div class='active-state'><i class='" + marker.data.icon + "' style='color: " + marker.data.color + ";'></i></div></div>");
-            _this5.markerElemHandler = new Hammer(markerElem.get(0));
-
-            _this5.markerElemHandler.on('tap', _this5.onMarkerHandler);
-
-            createdMarkers.push(Fliplet.UI.PanZoom.Markers.create(markerElem, {
-              x: marker.data.positionX,
-              y: marker.data.positionY,
-              name: marker.data.name,
-              id: marker.id
-            }));
-          }
-        });
-        this.flPanZoomInstances[this.selectedMapData.id].markers.set(createdMarkers);
-      },
-      onMarkerHandler: function onMarkerHandler(e) {
-        var markers = this.flPanZoomInstances[this.selectedMapData.id].markers.getAll();
-        var id = $(e.target).attr('id');
-
-        var marker = _.find(markers, function (o) {
-          return o.vars.id == id;
-        });
-
-        this.activeMarker = _.findIndex(this.mappedMarkerData, function (o) {
-          return o.id == marker.vars.id;
-        });
-        this.selectPinchMarker();
-        this.selectedMarkerData = this.mappedMarkerData[this.activeMarker].data;
-        this.selectedMarkerToggle = true;
-      },
-      setActiveMap: function setActiveMap(mapIndex, fromSearch) {
-        if (this.activeMap !== mapIndex) {
-          this.activeMap = mapIndex;
-        }
-
-        if (!fromSearch) {
-          this.setupFlPanZoom();
-        }
-
-        this.toggleMapOverlay(false);
-      },
-      setActiveMarker: function setActiveMarker(markerIndex) {
-        this.activeMarker = markerIndex;
-        this.setupFlPanZoom();
-        this.toggleSearchOverlay(false);
-      },
-      selectedMarker: function selectedMarker(markerData) {
-        var mapIndex = _.findIndex(this.maps, function (o) {
-          return o.name == markerData.data.map;
-        });
-
-        var markerIndex = _.findIndex(this.mappedMarkerData, function (o) {
-          return o.id == markerData.id;
-        });
-
-        this.setActiveMap(mapIndex, true);
-        this.setActiveMarker(markerIndex);
-      },
-      selectMarkerOnStart: function selectMarkerOnStart(options) {
-        var _this6 = this;
-
-        var markerIndex = -1;
-        var markerSelector = '';
-
-        if (_.get(options, 'markerId')) {
-          markerIndex = _.findIndex(this.mappedMarkerData, function (o) {
-            return o.id == options.markerId;
-          });
-          markerSelector = ' ' + options.markerId;
-        }
-
-        if (_.get(options, 'markerName')) {
-          markerIndex = _.findIndex(this.mappedMarkerData, function (o) {
-            return o.data.name == options.markerName;
-          });
-          markerSelector = ' "' + options.markerName + '"';
-        }
-
-        if (markerIndex === -1) {
-          Fliplet.UI.Toast({
-            message: T('widgets.interactiveMap.errorToast.selectedMarkerNotFound', {
-              markerSelector: markerSelector
-            })
-          });
-        }
-
-        var mapIndex = markerIndex > -1 ? _.findIndex(this.maps, function (o) {
-          return o.name == _this6.mappedMarkerData[markerIndex].data.map;
-        }) : 0;
-        this.setActiveMap(mapIndex, true);
-        this.setActiveMarker(markerIndex > -1 ? markerIndex : 0);
-      },
-      selectMapOnStart: function selectMapOnStart(options) {
-        var mapIndex = _.findIndex(this.maps, function (o) {
-          return o.name == options.mapName;
-        });
-
-        if (mapIndex === -1) {
-          Fliplet.UI.Toast({
-            message: T('widgets.interactiveMap.errorToast.selectedMapNotFound', {
-              mapName: options.mapName ? '"' + options.mapName + '"' : ''
-            })
-          });
-        }
-
-        this.setActiveMap(mapIndex > -1 ? mapIndex : 0);
-      },
-      removeSelectedMarker: function removeSelectedMarker() {
-        var _this7 = this;
-
-        this.selectedMarkerToggle = false; // Wait for animation
-
-        setTimeout(function () {
-          // Remove any active marker
-          $('.marker').removeClass('active');
-          _this7.selectedMarkerData = undefined;
-        }, 250);
-      },
-      closeMapsOverlay: function closeMapsOverlay() {
-        this.toggleMapOverlay(false);
-      },
-      toggleMapOverlay: function toggleMapOverlay(forceOpen) {
-        if (typeof forceOpen === 'undefined') {
-          $(selector).find('.interactive-maps-overlay').toggleClass('overlay-open');
-          return;
-        }
-
-        $(selector).find('.interactive-maps-overlay')[forceOpen ? 'addClass' : 'removeClass']('overlay-open');
-      },
-      closeSearchOverlay: function closeSearchOverlay() {
-        this.toggleSearchOverlay(false);
-      },
-      toggleSearchOverlay: function toggleSearchOverlay(forceOpen) {
-        this.searchValue = '';
-
-        if (typeof forceOpen === 'undefined') {
-          $(selector).find('.interactive-maps-search-overlay').toggleClass('overlay-open');
-          return;
-        }
-
-        $(selector).find('.interactive-maps-search-overlay')[forceOpen ? 'addClass' : 'removeClass']('overlay-open');
-      },
-      onLabelClick: function onLabelClick() {
-        Fliplet.Hooks.run('flInteractiveGraphicsLabelClick', {
-          selectedMarker: this.selectedMarkerData,
-          config: this,
-          id: widgetData.id,
-          uuid: widgetData.uuid,
-          container: $(selector)
-        });
-      },
-      fetchData: function fetchData(options) {
-        return Fliplet.DataSources.connect(this.markersDataSourceId, options).then(function (connection) {
-          return connection.find();
-        })["catch"](function (error) {
-          Fliplet.UI.Toast({
-            message: T('widgets.interactiveMap.errorToast.loadFailed.title'),
-            actions: [{
-              label: T('widgets.interactiveMap.errorToast.loadFailed.label'),
-              action: function action() {
-                Fliplet.UI.Toast({
-                  html: error.message || Fliplet.parseError(error)
-                });
-              }
-            }]
-          });
-        });
-      },
-      refreshInstance: function refreshInstance() {
-        // We should refresh ZoomInstance only if we have selectedMapData
-        // If there is no selectedMapData it means that PanZoom doesn't inited
-        if (this.selectedMapData) {
-          this.flPanZoomInstances[this.selectedMapData.id].refresh();
-        } else {
-          this.setupFlPanZoom();
-        }
-      },
-      init: function init() {
-        var _this8 = this;
-
-        var cache = {
-          offline: true
-        };
-        return Fliplet.Hooks.run('flInteractiveGraphicsBeforeGetData', {
-          config: this,
-          id: widgetData.id,
-          uuid: widgetData.uuid,
-          container: $(selector)
-        }).then(function () {
-          if (_this8.getData) {
-            _this8.fetchData = _this8.getData;
-
-            if (_this8.hasOwnProperty('cache')) {
-              cache.offline = _this8.cache;
-            }
-          }
-
-          return _this8.fetchData(cache);
-        }).then(function (dsData) {
-          _this8.markersData = dsData; // Ordering and take into account numbers on the string
-
-          _this8.mappedMarkerData = _this8.mapMarkerData().slice().sort(function (a, b) {
-            return a.data.name.localeCompare(b.data.name, undefined, {
-              numeric: true
-            });
-          });
-          return Fliplet.Hooks.run('flInteractiveGraphicsBeforeRender', {
-            config: _this8,
-            id: widgetData.id,
-            uuid: widgetData.uuid,
-            container: $(selector),
-            markers: _this8.mappedMarkerData
-          });
-        }).then(function (response) {
-          _this8.searchMarkerData = _.cloneDeep(_this8.mappedMarkerData);
-
-          if (!response.length) {
-            _this8.$nextTick(_this8.setupFlPanZoom);
-
-            return;
-          } // Check if it should start with a specific marker selected or select a map
-
-
-          if (_.get(response[0], 'markerId') || _.get(response[0], 'markerName')) {
-            _this8.selectMarkerOnStart(response[0]);
-          } else if (_.get(response[0], 'mapName')) {
-            _this8.selectMapOnStart(response[0]);
-          } else if (_.get(response[0], 'selectMarker') === false) {
-            // Ensure no marker is selected
-            _this8.setActiveMarker(-1);
-          } else {
-            _this8.$nextTick(_this8.setupFlPanZoom);
-          }
-        });
-      }
-    },
-    mounted: function () {
-      var _mounted = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()(
-      /*#__PURE__*/
-      _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee() {
-        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                if (!this.containsData) {
-                  _context.next = 5;
-                  break;
-                }
-
-                if (!(!this.markersDataSourceId || !this.markerNameColumn || !this.markerMapColumn || !this.markerTypeColumn || !this.markerXPositionColumn || !this.markerYPositionColumn)) {
-                  _context.next = 3;
-                  break;
-                }
-
-                return _context.abrupt("return", Fliplet.UI.Toast({
-                  message: T('widgets.interactiveMap.errorToast.dataSourceMisconfigured')
-                }));
-
-              case 3:
-                _context.next = 5;
-                return this.init();
-
-              case 5:
-                Fliplet.Hooks.on('appearanceChanged', this.refreshInstance);
-                Fliplet.Hooks.on('appearanceFileChanged', this.refreshInstance);
-                $(selector).removeClass('is-loading');
-
-              case 8:
-              case "end":
-                return _context.stop();
-            }
-          }
-        }, _callee, this);
-      }));
-
-      function mounted() {
-        return _mounted.apply(this, arguments);
-      }
-
-      return mounted;
-    }(),
-    beforeDestroy: function beforeDestroy() {
-      if (this.searchTimeout) {
-        clearTimeout(this.searchTimeout);
-        this.searchTimeout = null;
-      }
-    }
+    });
   });
 });
 

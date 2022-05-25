@@ -12,6 +12,7 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
   Fliplet().then(function() {
     const $interactiveMap = new Vue({
       el: $(selector)[0],
+      i18n: Fliplet.Locale.plugins.vue(),
       data() {
         return {
           containsData: !!(widgetData.maps && widgetData.maps.length),
