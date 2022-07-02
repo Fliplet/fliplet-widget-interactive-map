@@ -1,0 +1,29 @@
+{
+  "widgets": {
+    "interactiveMap": {
+      "title": "MAPS",
+      "search": {
+        "title": "SEARCH",
+        "placeholder": "Type to search",
+        "actions": {
+          "clear": "Clear"
+        },
+        "markerNotFound": {
+          "title": "We couldn't find a marker matching the name or map: <strong>{{searchValue}}</strong>.",
+          "instruction": "Please try a different search value."
+        }
+      },
+      "errorToast": {
+        "markersWithoutInformation": "Some markers have missing information and they may not be shown.",
+        "mapNotFound": "The map couldn't be found. Please make sure the maps are configured correctly.",
+        "selectedMarkerNotFound": "Map marker {{markerSelector}} not found'",
+        "selectedMapNotFound": "Map {{mapName}} not found",
+        "loadFailed": {
+          "title": "Error loading data",
+          "label": "Details"
+        },
+        "dataSourceMisconfigured": "The data source or data source columns are misconfigured."
+      }
+    }
+  }
+}
