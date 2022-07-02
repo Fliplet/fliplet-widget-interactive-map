@@ -6,10 +6,10 @@ Vue.filter('auth', function (value) {
   return Fliplet.Media.authenticate(value)
 })
 
-Fliplet.Widget.instance('interactive-map', function(widgetData) {
-  var selector = '[data-interactive-map-id="' + widgetData.id + '"]';
+Fliplet.Widget.instance('interactive-map', function (widgetData) {
+  const selector = `[data-interactive-map-id="${widgetData.id}"]`
 
-  Fliplet().then(function() {
+  Fliplet().then(function () {
     const $interactiveMap = new Vue({
       el: $(selector)[0],
       i18n: Fliplet.Locale.plugins.vue(),
@@ -60,11 +60,7 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
             return
           }
 
-          this.searchMarkerData = _.filter(this.mappedMarkerData, (marker) => {
-            return _.some(['name', 'map'], (key) => {
-              return marker.data[key] && marker.data[key].toString().toLowerCase().indexOf(this.searchValue.toLowerCase()) > -1
-            })
-          })
+          this.searchMarkerData = _.filter(this.mappedMarkerData, marker => _.some(['name', 'map'], key => marker.data[key] && marker.data[key].toString().toLowerCase().indexOf(this.searchValue.toLowerCase()) > -1))
 
           if (!this.searchMarkerData.length) {
             this.noSearchResults = true
@@ -137,7 +133,7 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
             })
           }
 
-          this.pzElement = $('#map-' + this.selectedMapData.id)
+          this.pzElement = $(`#map-${this.selectedMapData.id}`)
 
           if (_.isEmpty(this.flPanZoomInstances) || !this.flPanZoomInstances[this.selectedMapData.id]) {
             this.imageLoaded = false
@@ -177,15 +173,13 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
           const firstMarker = markers[0]
 
           // Find the new selected marker from flPanZoomInstance
-          this.selectedPinchMarker = _.find(markers, (marker) => {
-            return marker.vars.id === this.mappedMarkerData[this.activeMarker].id
-          })
+          this.selectedPinchMarker = _.find(markers, marker => marker.vars.id === this.mappedMarkerData[this.activeMarker].id)
 
           // Apply class active
           if (this.selectedPinchMarker) {
             $(this.selectedPinchMarker.getElement().get(0)).addClass('active')
           } else {
-            this.activeMarker = _.findIndex(this.mappedMarkerData, (o) => { return o.id == firstMarker.vars.id })
+            this.activeMarker = _.findIndex(this.mappedMarkerData, o => o.id == firstMarker.vars.id)
             this.selectedMarkerData = this.mappedMarkerData[this.activeMarker].data
             $(firstMarker.getElement().get(0)).addClass('active')
           }
@@ -195,8 +189,7 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
 
           this.mappedMarkerData.forEach((marker, index) => {
             if (marker.data.map === this.selectedMapData.name) {
-
-              const markerElem = $("<div id='" + marker.id + "' class='marker' data-name='" + marker.data.name + "' style='left: -15px; top: -15px; position: absolute; font-size: " + marker.data.size + ";'><i class='" + marker.data.icon + "' style='color: " + marker.data.color + "; font-size: " + marker.data.size + ";'></i><div class='active-state'><i class='" + marker.data.icon + "' style='color: " + marker.data.color + ";'></i></div></div>")
+              const markerElem = $(`<div id='${marker.id}' class='marker' data-name='${marker.data.name}' style='left: -15px; top: -15px; position: absolute; font-size: ${marker.data.size};'><i class='${marker.data.icon}' style='color: ${marker.data.color}; font-size: ${marker.data.size};'></i><div class='active-state'><i class='${marker.data.icon}' style='color: ${marker.data.color};'></i></div></div>`)
 
               this.markerElemHandler = new Hammer(markerElem.get(0))
               this.markerElemHandler.on('tap', this.onMarkerHandler)
@@ -210,8 +203,8 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
         onMarkerHandler(e) {
           const markers = this.flPanZoomInstances[this.selectedMapData.id].markers.getAll()
           const id = $(e.target).attr('id')
-          const marker = _.find(markers, (o) => { return o.vars.id == id })
-          this.activeMarker = _.findIndex(this.mappedMarkerData, (o) => { return o.id == marker.vars.id })
+          const marker = _.find(markers, o => o.vars.id == id)
+          this.activeMarker = _.findIndex(this.mappedMarkerData, o => o.id == marker.vars.id)
           this.selectPinchMarker()
           this.selectedMarkerData = this.mappedMarkerData[this.activeMarker].data
           this.selectedMarkerToggle = true
@@ -233,8 +226,8 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
           this.toggleSearchOverlay(false)
         },
         selectedMarker(markerData) {
-          const mapIndex = _.findIndex(this.maps, (o) => { return o.name == markerData.data.map })
-          const markerIndex = _.findIndex(this.mappedMarkerData, (o) => { return o.id == markerData.id })
+          const mapIndex = _.findIndex(this.maps, o => o.name == markerData.data.map)
+          const markerIndex = _.findIndex(this.mappedMarkerData, o => o.id == markerData.id)
 
           this.setActiveMap(mapIndex, true)
           this.setActiveMarker(markerIndex)
@@ -244,36 +237,34 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
           let markerSelector = ''
 
           if (_.get(options, 'markerId')) {
-            markerIndex = _.findIndex(this.mappedMarkerData, (o) => { return o.id == options.markerId })
-            markerSelector = ' ' + options.markerId
+            markerIndex = _.findIndex(this.mappedMarkerData, o => o.id == options.markerId)
+            markerSelector = ` ${options.markerId}`
           }
 
           if (_.get(options, 'markerName')) {
-            markerIndex = _.findIndex(this.mappedMarkerData, (o) => { return o.data.name == options.markerName })
-            markerSelector = ' "' + options.markerName + '"'
+            markerIndex = _.findIndex(this.mappedMarkerData, o => o.data.name == options.markerName)
+            markerSelector = ` "${options.markerName}"`
           }
 
           if (markerIndex === -1) {
             Fliplet.UI.Toast({
-              message: T('widgets.interactiveMap.errorToast.selectedMarkerNotFound', { markerSelector: markerSelector })
+              message: T('widgets.interactiveMap.errorToast.selectedMarkerNotFound', { markerSelector })
             })
           }
 
           const mapIndex = markerIndex > -1
-            ? _.findIndex(this.maps, (o) => {
-              return o.name == this.mappedMarkerData[markerIndex].data.map
-            })
+            ? _.findIndex(this.maps, o => o.name == this.mappedMarkerData[markerIndex].data.map)
             : 0
 
           this.setActiveMap(mapIndex, true)
           this.setActiveMarker(markerIndex > -1 ? markerIndex : 0)
         },
         selectMapOnStart(options) {
-          const mapIndex = _.findIndex(this.maps, (o) => { return o.name == options.mapName })
+          const mapIndex = _.findIndex(this.maps, o => o.name == options.mapName)
 
           if (mapIndex === -1) {
             Fliplet.UI.Toast({
-              message: T('widgets.interactiveMap.errorToast.selectedMapNotFound', { mapName: options.mapName ? '"' + options.mapName + '"' : '' })
+              message: T('widgets.interactiveMap.errorToast.selectedMapNotFound', { mapName: options.mapName ? `"${options.mapName}"` : '' })
             })
           }
 
@@ -324,19 +315,17 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
         },
         fetchData(options) {
           return Fliplet.DataSources.connect(this.markersDataSourceId, options)
-            .then((connection) => {
-              return connection.find()
-            })
+            .then(connection => connection.find())
             .catch((error) => {
               Fliplet.UI.Toast({
                 message: T('widgets.interactiveMap.errorToast.loadFailed.title'),
                 actions: [
                   {
                     label: T('widgets.interactiveMap.errorToast.loadFailed.label'),
-                    action: function () {
+                    action() {
                       Fliplet.UI.Toast({
                         html: error.message || Fliplet.parseError(error)
-                      });
+                      })
                     }
                   }
                 ]
@@ -373,7 +362,7 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
           }).then((dsData) => {
             this.markersData = dsData
             // Ordering and take into account numbers on the string
-            this.mappedMarkerData = this.mapMarkerData().slice().sort((a,b) => a.data.name.localeCompare(b.data.name, undefined, { numeric: true }))
+            this.mappedMarkerData = this.mapMarkerData().slice().sort((a, b) => a.data.name.localeCompare(b.data.name, undefined, { numeric: true }))
 
             return Fliplet.Hooks.run('flInteractiveGraphicsBeforeRender', {
               config: this,
@@ -431,6 +420,6 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
           this.searchTimeout = null
         }
       }
-    });
-  });
-});
+    })
+  })
+})
