@@ -235,6 +235,8 @@ Fliplet.InteractiveMap.component('map-panel', {
               });
               Fliplet.Widget.toggleSaveButton(!!data.length);
               break;
+            default:
+              break;
           }
         }
       });
