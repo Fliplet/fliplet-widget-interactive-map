@@ -153,6 +153,9 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
         }
       },
       methods: {
+        getMarkerId: function getMarkerId(id) {
+          return "marker-".concat(widgetData.id, "-").concat(id);
+        },
         filterMarkers: function filterMarkers() {
           var _this = this;
           if (!this.searchValue) {
@@ -269,15 +272,15 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
 
           // Find the new selected marker from flPanZoomInstance
           this.selectedPinchMarker = _.find(markers, function (marker) {
-            return marker.vars.id === _this4.mappedMarkerData[_this4.activeMarker].id;
+            return marker.vars.id === _this4.getMarkerId(_this4.mappedMarkerData[_this4.activeMarker].id);
           });
 
           // Apply class active
           if (this.selectedPinchMarker) {
             $(this.selectedPinchMarker.getElement().get(0)).addClass('active');
           } else {
-            this.activeMarker = _.findIndex(this.mappedMarkerData, {
-              id: firstMarker.vars.id
+            this.activeMarker = _.findIndex(this.mappedMarkerData, function (obj) {
+              return _this4.getMarkerId(obj.id) === firstMarker.vars.id;
             });
             this.selectedMarkerData = this.mappedMarkerData[this.activeMarker].data;
             $(firstMarker.getElement().get(0)).addClass('active');
@@ -288,27 +291,28 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
           var createdMarkers = [];
           this.mappedMarkerData.forEach(function (marker) {
             if (marker.data.map === _this5.selectedMapData.name) {
-              var markerElem = $("<div id='".concat(marker.id, "' class='marker' data-name='").concat(marker.data.name, "' style='left: -15px; top: -15px; position: absolute; font-size: ").concat(marker.data.size, ";'><i class='").concat(marker.data.icon, "' style='color: ").concat(marker.data.color, "; font-size: ").concat(marker.data.size, ";'></i><div class='active-state'><i class='").concat(marker.data.icon, "' style='color: ").concat(marker.data.color, ";'></i></div></div>"));
+              var markerElem = $("<div\n                id=\"".concat(_this5.getMarkerId(marker.id), "\"\n                class=\"marker\"\n                data-name=\"").concat(marker.data.name, "\"\n                style=\"left: -15px; top: -15px; position: absolute; font-size: ").concat(marker.data.size, ";\">\n                <i\n                  class=\"").concat(marker.data.icon, "\"\n                  style=\"color: ").concat(marker.data.color, "; font-size: ").concat(marker.data.size, ";\"></i>\n                <div class=\"active-state\">\n                  <i class=\"").concat(marker.data.icon, "\" style=\"color: ").concat(marker.data.color, ";\"></i>\n                </div>\n              </div>"));
               _this5.markerElemHandler = new Hammer(markerElem.get(0));
               _this5.markerElemHandler.on('tap', _this5.onMarkerHandler);
               createdMarkers.push(Fliplet.UI.PanZoom.Markers.create(markerElem, {
                 x: marker.data.positionX,
                 y: marker.data.positionY,
                 name: marker.data.name,
-                id: marker.id
+                id: _this5.getMarkerId(marker.id)
               }));
             }
           });
           this.flPanZoomInstances[this.selectedMapData.id].markers.set(createdMarkers);
         },
         onMarkerHandler: function onMarkerHandler(e) {
+          var _this6 = this;
           var markers = this.flPanZoomInstances[this.selectedMapData.id].markers.getAll();
-          var id = $(e.target).attr('id');
+          var id = e.target.id;
           var marker = _.find(markers, function (o) {
             return o.vars.id === id;
           });
-          this.activeMarker = _.findIndex(this.mappedMarkerData, {
-            id: marker.vars.id
+          this.activeMarker = _.findIndex(this.mappedMarkerData, function (obj) {
+            return _this6.getMarkerId(obj.id) === marker.vars.id;
           });
           this.selectPinchMarker();
           this.selectedMarkerData = this.mappedMarkerData[this.activeMarker].data;
@@ -380,14 +384,14 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
           this.setActiveMap(mapIndex > -1 ? mapIndex : 0);
         },
         removeSelectedMarker: function removeSelectedMarker() {
-          var _this6 = this;
+          var _this7 = this;
           this.selectedMarkerToggle = false;
 
           // Wait for animation
           setTimeout(function () {
             // Remove any active marker
             $('.marker').removeClass('active');
-            _this6.selectedMarkerData = undefined;
+            _this7.selectedMarkerData = undefined;
           }, 250);
         },
         closeMapsOverlay: function closeMapsOverlay() {
@@ -447,7 +451,7 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
           }
         },
         init: function init() {
-          var _this7 = this;
+          var _this8 = this;
           var cache = {
             offline: true
           };
@@ -457,61 +461,61 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
             uuid: widgetData.uuid,
             container: $(selector)
           }).then(function () {
-            if (_this7.getData) {
-              _this7.fetchData = _this7.getData;
-              if (_this7.hasOwnProperty('cache')) {
-                cache.offline = _this7.cache;
+            if (_this8.getData) {
+              _this8.fetchData = _this8.getData;
+              if (_this8.hasOwnProperty('cache')) {
+                cache.offline = _this8.cache;
               }
             }
-            return _this7.fetchData(cache);
+            return _this8.fetchData(cache);
           }).then(function (dsData) {
-            _this7.markersData = dsData;
+            _this8.markersData = dsData;
             // Ordering and take into account numbers on the string
-            _this7.mappedMarkerData = _this7.mapMarkerData().slice().sort(function (a, b) {
+            _this8.mappedMarkerData = _this8.mapMarkerData().slice().sort(function (a, b) {
               return a.data.name.localeCompare(b.data.name, undefined, {
                 numeric: true
               });
             });
             return Fliplet.Hooks.run('flInteractiveGraphicsBeforeRender', {
-              config: _this7,
+              config: _this8,
               id: widgetData.id,
               uuid: widgetData.uuid,
               container: $(selector),
-              markers: _this7.mappedMarkerData
+              markers: _this8.mappedMarkerData
             });
           }).then(function (response) {
-            _this7.searchMarkerData = _.cloneDeep(_this7.mappedMarkerData);
+            _this8.searchMarkerData = _.cloneDeep(_this8.mappedMarkerData);
             if (!response.length) {
-              _this7.$nextTick(_this7.setupFlPanZoom);
+              _this8.$nextTick(_this8.setupFlPanZoom);
               return;
             }
 
             // Check if it should start with a specific marker selected or select a map
             if (_.get(response[0], 'markerId') || _.get(response[0], 'markerName')) {
-              _this7.selectMarkerOnStart(response[0]);
+              _this8.selectMarkerOnStart(response[0]);
             } else if (_.get(response[0], 'mapName')) {
-              _this7.selectMapOnStart(response[0]);
+              _this8.selectMapOnStart(response[0]);
             } else if (_.get(response[0], 'selectMarker') === false) {
               // Ensure no marker is selected
-              _this7.setActiveMarker(-1);
+              _this8.setActiveMarker(-1);
             } else {
-              _this7.$nextTick(_this7.setupFlPanZoom);
+              _this8.$nextTick(_this8.setupFlPanZoom);
             }
           });
         }
       },
       mounted: function mounted() {
-        var _this8 = this;
+        var _this9 = this;
         return _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee() {
           return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee$(_context) {
             while (1) {
               switch (_context.prev = _context.next) {
                 case 0:
-                  if (!_this8.containsData) {
+                  if (!_this9.containsData) {
                     _context.next = 5;
                     break;
                   }
-                  if (!(!_this8.markersDataSourceId || !_this8.markerNameColumn || !_this8.markerMapColumn || !_this8.markerTypeColumn || !_this8.markerXPositionColumn || !_this8.markerYPositionColumn)) {
+                  if (!(!_this9.markersDataSourceId || !_this9.markerNameColumn || !_this9.markerMapColumn || !_this9.markerTypeColumn || !_this9.markerXPositionColumn || !_this9.markerYPositionColumn)) {
                     _context.next = 3;
                     break;
                   }
@@ -520,10 +524,10 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
                   }));
                 case 3:
                   _context.next = 5;
-                  return _this8.init();
+                  return _this9.init();
                 case 5:
-                  Fliplet.Hooks.on('appearanceChanged', _this8.refreshInstance);
-                  Fliplet.Hooks.on('appearanceFileChanged', _this8.refreshInstance);
+                  Fliplet.Hooks.on('appearanceChanged', _this9.refreshInstance);
+                  Fliplet.Hooks.on('appearanceFileChanged', _this9.refreshInstance);
                   $(selector).removeClass('is-loading');
                 case 8:
                 case "end":
