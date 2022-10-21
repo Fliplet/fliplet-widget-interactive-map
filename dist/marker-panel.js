@@ -136,12 +136,10 @@ Fliplet.InteractiveMap.component('marker-panel', {
   methods: {
     onInputData: function onInputData() {
       var componentData = _.pick(this, ['id', 'name', 'icon', 'color', 'size', 'type', 'isFromNew']);
-
       Fliplet.InteractiveMap.emit('marker-panel-settings-changed', componentData);
     },
     openIconPicker: function openIconPicker() {
       var _this = this;
-
       this.icon = this.icon || '';
       Fliplet.Widget.toggleCancelButton(false);
       window.iconPickerProvider = Fliplet.Widget.open('com.fliplet.icon-selector', {
@@ -154,11 +152,9 @@ Fliplet.InteractiveMap.component('marker-panel', {
             case 'interface-validate':
               Fliplet.Widget.toggleSaveButton(data.isValid === true);
               break;
-
             case 'icon-clicked':
               Fliplet.Widget.toggleSaveButton(data.isSelected);
               break;
-
             default:
               break;
           }
@@ -169,16 +165,13 @@ Fliplet.InteractiveMap.component('marker-panel', {
       });
       window.iconPickerProvider.then(function (data) {
         Fliplet.Widget.toggleCancelButton(true);
-
         if (!data.data.icon) {
           _this.emptyIconNotification = true;
         } else {
           _this.icon = data.data.icon;
           _this.emptyIconNotification = false;
         }
-
         _this.onInputData();
-
         window.iconPickerProvider = null;
         Fliplet.Studio.emit('widget-save-label-reset');
         Fliplet.Widget.toggleSaveButton(false);
@@ -194,7 +187,6 @@ Fliplet.InteractiveMap.component('marker-panel', {
   },
   mounted: function mounted() {
     var _this2 = this;
-
     var $vm = this;
     var $colorpickerElement = $('#list-item-color-' + $vm.id).parents('[colorpicker-component]');
     $colorpickerElement.colorpicker({
@@ -235,7 +227,7 @@ Fliplet.InteractiveMap.component('marker-panel', {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Work\fliplet-widget-interactive-map\js\interface\marker-panel.js */"./js/interface/marker-panel.js");
+module.exports = __webpack_require__(/*! /Users/twu/Sites/fliplet/widgets/fliplet-widget-interactive-map/js/interface/marker-panel.js */"./js/interface/marker-panel.js");
 
 
 /***/ })
