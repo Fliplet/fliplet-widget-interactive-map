@@ -55,6 +55,9 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
         }
       },
       methods: {
+        getMarkerId(id) {
+          return `marker-${widgetData.id}-${id}`;
+        },
         filterMarkers() {
           if (!this.searchValue) {
             this.searchMarkerData = _.cloneDeep(this.mappedMarkerData);
@@ -178,13 +181,17 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
           const firstMarker = markers[0];
 
           // Find the new selected marker from flPanZoomInstance
-          this.selectedPinchMarker = _.find(markers, marker => marker.vars.id === this.mappedMarkerData[this.activeMarker].id);
+          this.selectedPinchMarker = _.find(markers, (marker) => {
+            return marker.vars.id === this.getMarkerId(this.mappedMarkerData[this.activeMarker].id);
+          });
 
           // Apply class active
           if (this.selectedPinchMarker) {
             $(this.selectedPinchMarker.getElement().get(0)).addClass('active');
           } else {
-            this.activeMarker = _.findIndex(this.mappedMarkerData, { id: firstMarker.vars.id });
+            this.activeMarker = _.findIndex(this.mappedMarkerData, (obj) => {
+              return this.getMarkerId(obj.id) === firstMarker.vars.id;
+            });
             this.selectedMarkerData = this.mappedMarkerData[this.activeMarker].data;
             $(firstMarker.getElement().get(0)).addClass('active');
           }
@@ -194,12 +201,28 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
 
           this.mappedMarkerData.forEach((marker) => {
             if (marker.data.map === this.selectedMapData.name) {
-              const markerElem = $(`<div id='${marker.id}' class='marker' data-name='${marker.data.name}' style='left: -15px; top: -15px; position: absolute; font-size: ${marker.data.size};'><i class='${marker.data.icon}' style='color: ${marker.data.color}; font-size: ${marker.data.size};'></i><div class='active-state'><i class='${marker.data.icon}' style='color: ${marker.data.color};'></i></div></div>`);
+              const markerElem = $(`<div
+                id="${this.getMarkerId(marker.id)}"
+                class="marker"
+                data-name="${marker.data.name}"
+                style="left: -15px; top: -15px; position: absolute; font-size: ${marker.data.size};">
+                <i
+                  class="${marker.data.icon}"
+                  style="color: ${marker.data.color}; font-size: ${marker.data.size};"></i>
+                <div class="active-state">
+                  <i class="${marker.data.icon}" style="color: ${marker.data.color};"></i>
+                </div>
+              </div>`);
 
               this.markerElemHandler = new Hammer(markerElem.get(0));
               this.markerElemHandler.on('tap', this.onMarkerHandler);
 
-              createdMarkers.push(Fliplet.UI.PanZoom.Markers.create(markerElem, { x: marker.data.positionX, y: marker.data.positionY, name: marker.data.name, id: marker.id }));
+              createdMarkers.push(Fliplet.UI.PanZoom.Markers.create(markerElem, {
+                x: marker.data.positionX,
+                y: marker.data.positionY,
+                name: marker.data.name,
+                id: this.getMarkerId(marker.id)
+              }));
             }
           });
 
@@ -207,10 +230,12 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
         },
         onMarkerHandler(e) {
           const markers = this.flPanZoomInstances[this.selectedMapData.id].markers.getAll();
-          const id = $(e.target).attr('id');
+          const id = e.target.id;
           const marker = _.find(markers, o => o.vars.id === id);
 
-          this.activeMarker = _.findIndex(this.mappedMarkerData, { id: marker.vars.id });
+          this.activeMarker = _.findIndex(this.mappedMarkerData, (obj) => {
+            return this.getMarkerId(obj.id) === marker.vars.id;
+          });
           this.selectPinchMarker();
           this.selectedMarkerData = this.mappedMarkerData[this.activeMarker].data;
           this.selectedMarkerToggle = true;
