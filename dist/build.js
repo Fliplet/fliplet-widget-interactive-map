@@ -231,7 +231,7 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
               message: T('widgets.interactiveMap.errorToast.mapNotFound')
             });
           }
-          this.pzElement = $("#map-".concat(this.selectedMapData.id));
+          this.pzElement = $(selector).find(".map-".concat(this.selectedMapData.id));
           if (_.isEmpty(this.flPanZoomInstances) || !this.flPanZoomInstances[this.selectedMapData.id]) {
             this.imageLoaded = false;
             this.flPanZoomInstances[this.selectedMapData.id] = Fliplet.UI.PanZoom.create(this.pzElement, {
