@@ -94,7 +94,6 @@
 /***/ (function(module, exports) {
 
 Fliplet.InteractiveMap = function () {
-  var components = {};
   var eventHub = new Vue();
   var templates = Fliplet.Widget.Templates;
   return {
@@ -111,13 +110,10 @@ Fliplet.InteractiveMap = function () {
       if (!componentName || !_component.componentName) {
         throw new Error('The component name is required');
       }
-
       var template = templates['templates.interface.' + componentName];
-
       if (!template) {
         throw new Error('A template for the ' + componentName + ' component has not been found');
       }
-
       _component.template = template();
       Vue.component(componentName, _component);
     }
@@ -133,7 +129,7 @@ Fliplet.InteractiveMap = function () {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Work\fliplet-widget-interactive-map\js\libs\core.js */"./js/libs/core.js");
+module.exports = __webpack_require__(/*! /Users/twu/Sites/fliplet/widgets/fliplet-widget-interactive-map/js/libs/core.js */"./js/libs/core.js");
 
 
 /***/ })
