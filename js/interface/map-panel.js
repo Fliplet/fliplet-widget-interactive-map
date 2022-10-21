@@ -38,52 +38,54 @@ Fliplet.InteractiveMap.component('map-panel', {
       imageWidth: undefined,
       imageHeight: undefined,
       oldMapName: ''
-    }
+    };
   },
   methods: {
     saveToDataSource() {
-     this.dataSourceConnection.commit(this.entries, this.columns)
-     this.oldMapName = this.name
-     Fliplet.Studio.emit('reload-widget-instance', this.widgetInstanceId)
-   },
-   getMapName() {
-     this.oldMapName = this.name
-   },
-   updateDataSource() {
-     Fliplet.DataSources.connect(this.dataSourceId).then(connection => {
-       this.dataSourceConnection = connection
-       connection.find({where: {['Map name']: this.oldMapName}}).then(records => {
-         if (!records.length) {
-           return
-         }
+      this.dataSourceConnection.commit(this.entries, this.columns);
+      this.oldMapName = this.name;
+      Fliplet.Studio.emit('reload-widget-instance', this.widgetInstanceId);
+    },
+    getMapName() {
+      this.oldMapName = this.name;
+    },
+    updateDataSource() {
+      Fliplet.DataSources.connect(this.dataSourceId).then(connection => {
+        this.dataSourceConnection = connection;
+        connection.find({ where: { ['Map name']: this.oldMapName } }).then(records => {
+          if (!records.length) {
+            return;
+          }
 
-         this.dataSourceConnection.find().then(records => {
+          this.dataSourceConnection.find().then(records => {
             records.forEach((elem, index, array) => {
               if (elem.data['Map name'] === this.oldMapName) {
-                array[index].data['Map name'] = this.name
+                array[index].data['Map name'] = this.name;
               }
-            })
+            });
 
-            this.entries = records
-            this.columns = _.keys(records[0].data)
-            this.saveToDataSource()
-          })
-        })
-      })
+            this.entries = records;
+            this.columns = _.keys(records[0].data);
+            this.saveToDataSource();
+          });
+        });
+      });
     },
     onInputData(imageSaved) {
-      const componentData = _.pick(this, ['id', 'name', 'image', 'type', 'isFromNew'])
-      Fliplet.InteractiveMap.emit('map-panel-settings-changed', componentData)
+      const componentData = _.pick(this, ['id', 'name', 'image', 'type', 'isFromNew']);
+
+      Fliplet.InteractiveMap.emit('map-panel-settings-changed', componentData);
+
       if (imageSaved) {
-        Fliplet.InteractiveMap.emit('new-map-added')
+        Fliplet.InteractiveMap.emit('new-map-added');
       }
     },
     openMapPicker() {
       Fliplet.DataSources.connect(this.dataSourceId).then(connection => {
-        this.dataSourceConnection = connection
-        connection.find({where: {['Map name']: this.name}}).then(records => {
+        this.dataSourceConnection = connection;
+        connection.find({ where: { ['Map name']: this.name } }).then(records => {
           if (!records.length) {
-            return
+            return;
           }
 
           Fliplet.Modal.confirm({
@@ -101,19 +103,21 @@ Fliplet.InteractiveMap.component('map-panel', {
             }
           }).then(result => {
             if (result) {
-              this.imageWidth = this.image.size[0]
-              this.imageHeight = this.image.size[1]
-              this.shouldKeepMarkers = true
-              return
+              this.imageWidth = this.image.size[0];
+              this.imageHeight = this.image.size[1];
+              this.shouldKeepMarkers = true;
+
+              return;
             }
+
             records.forEach(elem => {
-              this.dataSourceConnection.removeById(elem.id)
-            })
-            Fliplet.Studio.emit('reload-widget-instance', this.widgetInstanceId)
-          })
-        })
-      })
-      Fliplet.Widget.toggleCancelButton(false)
+              this.dataSourceConnection.removeById(elem.id);
+            });
+            Fliplet.Studio.emit('reload-widget-instance', this.widgetInstanceId);
+          });
+        });
+      });
+      Fliplet.Widget.toggleCancelButton(false);
 
       const filePickerData = {
         selectFiles: this.image ? [this.image] : [],
@@ -121,87 +125,92 @@ Fliplet.InteractiveMap.component('map-panel', {
         type: 'image',
         fileExtension: ['JPG', 'JPEG', 'PNG', 'GIF', 'TIFF', 'SVG'],
         autoSelectOnUpload: true
-      }
+      };
 
       window.filePickerProvider = Fliplet.Widget.open('com.fliplet.file-picker', {
         data: filePickerData,
         onEvent: (e, data) => {
           switch (e) {
             case 'widget-set-info':
-              Fliplet.Studio.emit('widget-save-label-reset')
+              Fliplet.Studio.emit('widget-save-label-reset');
               Fliplet.Studio.emit('widget-save-label-update', {
                 text: 'Select'
-              })
-              Fliplet.Widget.toggleSaveButton(!!data.length)
-              break
+              });
+              Fliplet.Widget.toggleSaveButton(!!data.length);
+              break;
+            default:
+              break;
           }
         }
-      })
+      });
 
       window.filePickerProvider.then(result => {
-       if (this.shouldKeepMarkers) {
-         let newImageWidth = result.data[0].size[0]
-         let newImageHeight = result.data[0].size[1]
+        if (this.shouldKeepMarkers) {
+          let newImageWidth = result.data[0].size[0];
+          let newImageHeight = result.data[0].size[1];
 
           if (newImageWidth !== this.imageWidth && newImageHeight !== this.imageHeight) {
-            let widthRatioDifference = newImageWidth/this.imageWidth
-            let heightRatioDifference = newImageHeight/this.imageHeight
+            let widthRatioDifference = newImageWidth / this.imageWidth;
+            let heightRatioDifference = newImageHeight / this.imageHeight;
 
             this.dataSourceConnection.find().then(records => {
               records.forEach((elem, index, array) => {
                 if (elem.data['Map name'] === this.name) {
-                  array[index].data['Position X'] *= widthRatioDifference
-                  array[index].data['Position Y'] *= heightRatioDifference
+                  array[index].data['Position X'] *= widthRatioDifference;
+                  array[index].data['Position Y'] *= heightRatioDifference;
                 }
-              })
-              this.entries = records
-              this.columns = _.keys(records[0].data)
-              this.saveToDataSource()
-            })
+              });
+              this.entries = records;
+              this.columns = _.keys(records[0].data);
+              this.saveToDataSource();
+            });
           }
         }
 
-        Fliplet.Widget.toggleCancelButton(true)
-        let imageUrl = result.data[0].url
-        const pattern = /[?&]size=/
+        Fliplet.Widget.toggleCancelButton(true);
+
+        let imageUrl = result.data[0].url;
+        const pattern = /[?&]size=/;
 
         if (!pattern.test(imageUrl)) {
           const params = imageUrl.substring(1).split('?');
-          imageUrl += (params.length > 1 ? '&' : '?') + 'size=large'
+
+          imageUrl += (params.length > 1 ? '&' : '?') + 'size=large';
         }
 
-        result.data[0].url = imageUrl
-        this.image = result.data[0]
-        this.onInputData(true)
-        window.filePickerProvider = null
-        Fliplet.Studio.emit('widget-save-label-reset')
-        return Promise.resolve()
-      })
+        result.data[0].url = imageUrl;
+        this.image = result.data[0];
+        this.onInputData(true);
+        window.filePickerProvider = null;
+        Fliplet.Studio.emit('widget-save-label-reset');
+
+        return Promise.resolve();
+      });
     }
   },
   created() {
-    Fliplet.InteractiveMap.on('maps-save', this.onInputData)
+    Fliplet.InteractiveMap.on('maps-save', this.onInputData);
   },
   destroyed() {
-    Fliplet.InteractiveMap.off('maps-save', this.onInputData)
+    Fliplet.InteractiveMap.off('maps-save', this.onInputData);
   }
-})
+});
 
-Fliplet.Widget.onCancelRequest(function () {
+Fliplet.Widget.onCancelRequest(function() {
   var providersNames = [
     'filePickerProvider',
     'iconPickerProvider'
-  ]
+  ];
 
-  _.each(providersNames, function (providerName) {
+  _.each(providersNames, function(providerName) {
     if (window[providerName]) {
-      window[providerName].close()
-      window[providerName] = null
+      window[providerName].close();
+      window[providerName] = null;
 
-      Fliplet.Widget.toggleSaveButton(providerName !== 'iconPickerProvider')
+      Fliplet.Widget.toggleSaveButton(providerName !== 'iconPickerProvider');
     }
-  })
+  });
 
-  Fliplet.Widget.toggleCancelButton(true)
-  Fliplet.Studio.emit('widget-save-label-reset')
-})
+  Fliplet.Widget.toggleCancelButton(true);
+  Fliplet.Studio.emit('widget-save-label-reset');
+});
