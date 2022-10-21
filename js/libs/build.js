@@ -137,7 +137,7 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
             });
           }
 
-          this.pzElement = $(`#map-${this.selectedMapData.id}`);
+          this.pzElement = $(selector).find(`.map-${this.selectedMapData.id}`);
 
           if (_.isEmpty(this.flPanZoomInstances) || !this.flPanZoomInstances[this.selectedMapData.id]) {
             this.imageLoaded = false;
