@@ -1,4 +1,4 @@
-import Multiselect from 'vue-multiselect'
+import Multiselect from 'vue-multiselect';
 
 Fliplet.InteractiveMap.component('add-markers', {
   componentName: 'Add Markers',
@@ -80,11 +80,11 @@ Fliplet.InteractiveMap.component('add-markers', {
       showEditMarkerOverlay: false,
       widgetInstanceId: Fliplet.Widget.getDefaultId(),
       styleNames: []
-    }
+    };
   },
   computed: {
     selectedMap() {
-      return this.widgetData.maps[this.selectedMapIndex]
+      return this.widgetData.maps[this.selectedMapIndex];
     }
   },
   methods: {
@@ -95,26 +95,26 @@ Fliplet.InteractiveMap.component('add-markers', {
           message: '<p>If you change the data source, the one we created for you will be deleted.<br>Are you sure you want to continue?</p>'
         }).then((result) => {
           if (!result) {
-            return
+            return;
           }
 
-          this.dataSourceToDelete = this.dataSourceId
+          this.dataSourceToDelete = this.dataSourceId;
 
           this.dataSources = _.filter(this.dataSources, (dataSource) => {
-            return dataSource.id !== this.dataSourceId
-          })
+            return dataSource.id !== this.dataSourceId;
+          });
 
-          this.dataSourceId = ds.id
-          this.markersDataSource.name = ds.name
-          this.markersDataSource.columns = ds.columns
-          this.dataWasChanged = true
+          this.dataSourceId = ds.id;
+          this.markersDataSource.name = ds.name;
+          this.markersDataSource.columns = ds.columns;
+          this.dataWasChanged = true;
 
-          this.resetSelectFields()
-        })
+          this.resetSelectFields();
+        });
       }
 
-      this.markersDataSource.name = ds.name
-      this.dataSourceId = ds.id
+      this.markersDataSource.name = ds.name;
+      this.dataSourceId = ds.id;
     },
     initDataSourceProvider(currentDataSourceId) {
       let dataSourceData = {
@@ -135,28 +135,29 @@ Fliplet.InteractiveMap.component('add-markers', {
             ]
           }
         ]
-      }
+      };
 
       this.dataSourceProvider = Fliplet.Widget.open('com.fliplet.data-source-provider', {
         selector: '#dataSourceProvider',
         data: dataSourceData,
         onEvent: (event, dataSource) => {
           if (event === 'dataSourceSelect') {
-            this.markersDataSourceChange(dataSource)
+            this.markersDataSourceChange(dataSource);
           }
         }
-      })
+      });
     },
     resetSelectFields() {
-      this.markerNameColumn = ''
-      this.markerMapColumn = ''
-      this.markerTypeColumn = ''
-      this.markerXPositionColumn = ''
-      this.markerYPositionColumn = ''
+      this.markerNameColumn = '';
+      this.markerMapColumn = '';
+      this.markerTypeColumn = '';
+      this.markerXPositionColumn = '';
+      this.markerYPositionColumn = '';
     },
     mapMarkerData() {
       const newMarkerData = this.markersData.map((marker) => {
-        const markerData = _.find(this.allMarkerStyles, { name: marker.data[this.markerTypeColumn] })
+        const markerData = _.find(this.allMarkerStyles, { name: marker.data[this.markerTypeColumn] });
+
         return {
           id: marker.id,
           data: {
@@ -171,83 +172,83 @@ Fliplet.InteractiveMap.component('add-markers', {
             updateName: false,
             copyOfName: ''
           }
-        }
-      })
+        };
+      });
 
-      return newMarkerData
+      return newMarkerData;
     },
     setActiveMarker(index, forced) {
       if (this.activeMarker !== index || forced) {
-        this.activeMarker = index
-        this.setupFlPanZoom()
+        this.activeMarker = index;
+        this.setupFlPanZoom();
       }
     },
     updateMap(mapName, index) {
-      this.mappedMarkerData[index].data.map = mapName
-      this.saveDebounced()
-      this.setupFlPanZoom()
+      this.mappedMarkerData[index].data.map = mapName;
+      this.saveDebounced();
+      this.setupFlPanZoom();
     },
     updateMarker(marker, index) {
-      this.mappedMarkerData[index].data.type = marker.name
-      this.mappedMarkerData[index].data.icon = marker.icon
-      this.mappedMarkerData[index].data.color = marker.color
-      this.mappedMarkerData[index].data.size = marker.size
-      this.saveDebounced()
-      this.setupFlPanZoom()
+      this.mappedMarkerData[index].data.type = marker.name;
+      this.mappedMarkerData[index].data.icon = marker.icon;
+      this.mappedMarkerData[index].data.color = marker.color;
+      this.mappedMarkerData[index].data.size = marker.size;
+      this.saveDebounced();
+      this.setupFlPanZoom();
     },
     toUpdateName(index, currentName) {
       // Confirm the marker name if one is still being edited
       this.mappedMarkerData.forEach((marker, index) => {
         if (marker.data.updateName) {
-          this.confirmName(index)
+          this.confirmName(index);
         }
-      })
+      });
 
       // Highlight the new marker name field
-      this.mappedMarkerData[index].data.updateName = !this.mappedMarkerData[index].data.updateName
-      this.mappedMarkerData[index].data.copyOfName = currentName
-      this.$nextTick(() => this.$refs['changename-' + index][0].focus())
+      this.mappedMarkerData[index].data.updateName = !this.mappedMarkerData[index].data.updateName;
+      this.mappedMarkerData[index].data.copyOfName = currentName;
+      this.$nextTick(() => this.$refs['changename-' + index][0].focus());
     },
     confirmName(index, fromCancel) {
       if (!this.mappedMarkerData[index].data.name.trim()) {
-        return
+        return;
       }
 
-      this.mappedMarkerData[index].data.updateName = !this.mappedMarkerData[index].data.updateName
+      this.mappedMarkerData[index].data.updateName = !this.mappedMarkerData[index].data.updateName;
 
       if (!fromCancel) {
-        this.saveDebounced()
-        this.setupFlPanZoom()
+        this.saveDebounced();
+        this.setupFlPanZoom();
       }
     },
     cancelNameUpdate(index) {
-      this.mappedMarkerData[index].data.name = this.mappedMarkerData[index].data.copyOfName
-      this.mappedMarkerData[index].data.copyOfName = ''
-      this.confirmName(index, true)
+      this.mappedMarkerData[index].data.name = this.mappedMarkerData[index].data.copyOfName;
+      this.mappedMarkerData[index].data.copyOfName = '';
+      this.confirmName(index, true);
     },
     deleteMarker(index) {
-      const markerId = this.mappedMarkerData[index].id
+      const markerId = this.mappedMarkerData[index].id;
 
       if (markerId) {
-        this.flPanZoomInstances[this.selectedMarkerData.map.id].markers.remove(markerId, { keepInDom: false })
+        this.flPanZoomInstances[this.selectedMarkerData.map.id].markers.remove(markerId, { keepInDom: false });
       }
 
-      this.mappedMarkerData.splice(index, 1)
-      this.setActiveMarker(0, true)
-      this.saveDebounced()
+      this.mappedMarkerData.splice(index, 1);
+      this.setActiveMarker(0, true);
+      this.saveDebounced();
     },
     nameWithId({ name, id }) {
-      return `${name} — [${id}]`
+      return `${name} — [${id}]`;
     },
     configureDataSources() {
-      this.savedData = false
+      this.savedData = false;
 
-      Fliplet.Studio.emit('widget-mode', 'normal')
+      Fliplet.Studio.emit('widget-mode', 'normal');
       this.$nextTick(() => {
         if (!this.dataSourceProvider) {
-          this.initDataSourceProvider(this.dataSourceId)
+          this.initDataSourceProvider(this.dataSourceId);
         }
-      })
+      });
     },
     editDataSource() {
       Fliplet.Studio.emit('overlay', {
@@ -262,7 +263,7 @@ Fliplet.InteractiveMap.component('add-markers', {
             dataSourceId: this.dataSourceId
           }
         }
-      })
+      });
     },
     reloadDataSources() {
       return Fliplet.DataSources.get({
@@ -270,7 +271,7 @@ Fliplet.InteractiveMap.component('add-markers', {
         type: null
       }, {
         cache: false
-      })
+      });
     },
     useSettings() {
       if (this.markerYPositionColumn === ''
@@ -278,67 +279,67 @@ Fliplet.InteractiveMap.component('add-markers', {
         || this.markerTypeColumn === ''
         || this.markerMapColumn === ''
         || this.markerNameColumn === ''
-        || this.markersDataSource === '')
-      {
-        this.dsConfigError = true
-        return
+        || this.markersDataSource === '') {
+        this.dsConfigError = true;
+
+        return;
       }
 
-      this.dataSourceProvider = null
+      this.dataSourceProvider = null;
 
       this.reloadData()
         .then(() => {
-          this.savedData = true
-          Fliplet.Studio.emit('widget-mode', 'full-screen')
-        })
+          this.savedData = true;
+          Fliplet.Studio.emit('widget-mode', 'full-screen');
+        });
     },
     onMarkerPanelSettingChanged(panelData) {
       this.allMarkerStyles.forEach((panel, index) => {
-        if (panelData.name == panel.name && panelData.id !== panel.id) {
-          panelData.error = 'Marker styles must have different names'
+        if (panelData.name === panel.name && panelData.id !== panel.id) {
+          panelData.error = 'Marker styles must have different names';
         }
 
         if (!panelData.name) {
-          panelData.error = 'Marker style name should not be empty'
+          panelData.error = 'Marker style name should not be empty';
         }
 
         if (panelData.id === panel.id) {
           // To overcome the array change caveat
           // https://vuejs.org/v2/guide/list.html#Caveats
-          Vue.set(this.allMarkerStyles, index, panelData)
+          Vue.set(this.allMarkerStyles, index, panelData);
         }
-      })
+      });
 
 
-      Fliplet.Widget.toggleSaveButton(!panelData.error)
-      this.hasError = !!panelData.error
+      Fliplet.Widget.toggleSaveButton(!panelData.error);
+      this.hasError = !!panelData.error;
 
       if (this.hasError) {
-        return
+        return;
       }
 
-      this.saveData()
+      this.saveData();
     },
     checkName(array, name, increment) {
       if (increment) {
-        name = `Marker ${array.length + increment}`
+        name = `Marker ${array.length + increment}`;
       }
 
-      return !!_.find(array, { name: name })
+      return !!_.find(array, { name: name });
     },
     generateName(array) {
-      let increment = 1
-      const name = `Marker ${array.length + increment}`
-      let sameNameFound = this.checkName(array, name)
+      let increment = 1;
+      const name = `Marker ${array.length + increment}`;
+      let sameNameFound = this.checkName(array, name);
 
       while (sameNameFound) {
-        increment++
-        sameNameFound = this.checkName(array, name, increment)
+        increment++;
+        sameNameFound = this.checkName(array, name, increment);
       }
 
-      const finalName = `Marker ${array.length + increment}`
+      const finalName = `Marker ${array.length + increment}`;
 
-      return finalName
+      return finalName;
     },
     onAddMarker() {
       const newItem = {
@@ -349,64 +350,64 @@ Fliplet.InteractiveMap.component('add-markers', {
         color: '#337ab7',
         type: 'marker-panel',
         size: '24px'
-      }
+      };
 
-      this.allMarkerStyles.push(newItem)
-      this.saveData()
+      this.allMarkerStyles.push(newItem);
+      this.saveData();
     },
     deleteMarkerStyle(options) {
-      var option = options || {}
-      var index = option.index
+      var option = options || {};
+      var index = option.index;
 
       Fliplet.Modal.confirm({
         title: 'Delete marker style',
         message: '<p>You will have to manually update any marker that has this style applied.</p><p>Are you sure you want to delete this marker style?</p>'
       }).then(result => {
         if (!result) {
-          return
+          return;
         }
 
         // This is used to remove error from a deleting marker style
         if (option.marker.error) {
-          var markerToDelete = this.allMarkerStyles[index]
+          var markerToDelete = this.allMarkerStyles[index];
 
-          markerToDelete.name = 'delete'
-          markerToDelete.error = ''
-          this.onMarkerPanelSettingChanged(markerToDelete)
+          markerToDelete.name = 'delete';
+          markerToDelete.error = '';
+          this.onMarkerPanelSettingChanged(markerToDelete);
         }
 
         // Remove deleting marker style from marker style arrays
-        this.allMarkerStyles.splice(index, 1)
+        this.allMarkerStyles.splice(index, 1);
         _.remove(this.styleNames, elem => {
-          return elem.id === option.marker.id
-        })
-      })
+          return elem.id === option.marker.id;
+        });
+      });
     },
     toggleEditMarkerOverlay() {
       if (this.hasError) {
-        return
+        return;
       }
 
       if (!this.showEditMarkerOverlay) {
         this.allMarkerStyles.forEach(elem => {
-          this.styleNames.push({'oldStyleName' : elem.name, 'newStyleName' : undefined, 'id' : elem.id})
-        })
-        Fliplet.Widget.toggleSaveButton(false)
+          this.styleNames.push({ 'oldStyleName': elem.name, 'newStyleName': undefined, 'id': elem.id });
+        });
+        Fliplet.Widget.toggleSaveButton(false);
       }
 
       if (this.showEditMarkerOverlay) {
-        $('.marker-overlay-saving').removeClass('hidden')
+        $('.marker-overlay-saving').removeClass('hidden');
 
         for (let i = 0; i < this.styleNames.length; i++) {
-          this.styleNames[i].newStyleName = this.allMarkerStyles[i].name
+          this.styleNames[i].newStyleName = this.allMarkerStyles[i].name;
         }
 
         Fliplet.DataSources.connect(this.dataSourceId).then(connection => {
-          this.dataSourceConnection = connection
+          this.dataSourceConnection = connection;
 
           connection.find().then(records => {
             if (!records.length) {
-              return
+              return;
             }
 
             records.forEach(elem => {
@@ -415,43 +416,45 @@ Fliplet.InteractiveMap.component('add-markers', {
               });
 
               if (matchedStyleName) {
-                elem.data['Marker style'] = matchedStyleName.newStyleName
+                elem.data['Marker style'] = matchedStyleName.newStyleName;
               }
-            })
+            });
 
-            const columns = _.keys(records[0].data)
+            const columns = _.keys(records[0].data);
 
-            this.styleNames = []
-            this.markersData = records
-            this.mappedMarkerData = this.mapMarkerData()
-            this.dataSourceConnection.commit(records, columns)
-            this.setupFlPanZoom()
+            this.styleNames = [];
+            this.markersData = records;
+            this.mappedMarkerData = this.mapMarkerData();
+            this.dataSourceConnection.commit(records, columns);
+            this.setupFlPanZoom();
 
-            Fliplet.Studio.emit('reload-widget-instance', this.widgetInstanceId)
-            Fliplet.Widget.toggleSaveButton(true)
-          })
-        })
+            Fliplet.Studio.emit('reload-widget-instance', this.widgetInstanceId);
+            Fliplet.Widget.toggleSaveButton(true);
+          });
+        });
       }
 
-      this.showEditMarkerOverlay = !this.showEditMarkerOverlay
+      this.showEditMarkerOverlay = !this.showEditMarkerOverlay;
     },
     setupFlPanZoom() {
       const mapName = this.mappedMarkerData.length
         ? this.mappedMarkerData[this.activeMarker].data.map
-        : this.widgetData.maps[0].name
-      this.selectedMarkerData.marker = this.mappedMarkerData[this.activeMarker]
-      this.selectedMarkerData.map = _.find(this.widgetData.maps, { name: mapName })
+        : this.widgetData.maps[0].name;
+
+      this.selectedMarkerData.marker = this.mappedMarkerData[this.activeMarker];
+      this.selectedMarkerData.map = _.find(this.widgetData.maps, { name: mapName });
+
       // If the map doesn't exist anymore set the first one in the list
       if (!this.selectedMarkerData.map) {
-        this.selectedMarkerData.map = this.widgetData.maps[0]
-        this.mappedMarkerData[this.activeMarker].data.map = this.selectedMarkerData.map.name
-        this.saveDebounced()
+        this.selectedMarkerData.map = this.widgetData.maps[0];
+        this.mappedMarkerData[this.activeMarker].data.map = this.selectedMarkerData.map.name;
+        this.saveDebounced();
       }
 
-      this.pzElement = $('#map-' + this.selectedMarkerData.map.id)
+      this.pzElement = $('#map-' + this.selectedMarkerData.map.id);
 
       if (_.isEmpty(this.flPanZoomInstances) || !this.flPanZoomInstances[this.selectedMarkerData.map.id]) {
-        this.imageLoaded = false
+        this.imageLoaded = false;
 
         this.flPanZoomInstances[this.selectedMarkerData.map.id] = Fliplet.UI.PanZoom.create(this.pzElement, {
           maxZoom: 10,
@@ -459,67 +462,68 @@ Fliplet.InteractiveMap.component('add-markers', {
           doubleTapZoom: 3,
           animDuration: 0.1,
           tapMarkerToActivate: false
-        })
+        });
 
-        this.pzHandler = new Hammer(this.pzElement.get(0))
-        this.attachEventHandler()
+        this.pzHandler = new Hammer(this.pzElement.get(0));
+        this.attachEventHandler();
       } else {
-        this.flPanZoomInstances[this.selectedMarkerData.map.id].markers.removeAll()
-        this.flPanZoomInstances[this.selectedMarkerData.map.id].zoom(0, 0)
+        this.flPanZoomInstances[this.selectedMarkerData.map.id].markers.removeAll();
+        this.flPanZoomInstances[this.selectedMarkerData.map.id].zoom(0, 0);
       }
 
       this.flPanZoomInstances[this.selectedMarkerData.map.id].on('mapImageLoaded', () => {
-        this.imageLoaded = true
-      })
+        this.imageLoaded = true;
+      });
 
       if (this.mappedMarkerData.length) {
-        this.addMarkers(true)
-        this.selectPinchMarker()
+        this.addMarkers(true);
+        this.selectPinchMarker();
       }
     },
     removeMarkers() {
-      $(this.selector).find('.marker').remove()
+      $(this.selector).find('.marker').remove();
     },
     addMarkers(fromLoad, options) {
-      let markerElem = undefined
-      const createdMarkers = []
-      options = options || {}
+      let markerElem;
+      const createdMarkers = [];
+
+      options = options || {};
 
       if (fromLoad) {
         // Manually removes markers
-        this.removeMarkers()
+        this.removeMarkers();
 
-        this.mappedMarkerData.forEach((marker, index) => {
+        this.mappedMarkerData.forEach((marker) => {
           if (marker.data.map === this.selectedMarkerData.map.name) {
-            markerElem = $("<div id='" + marker.id + "' class='marker' data-id='" + marker.id + "' data-name='" + marker.data.name + "' style='left: -15px; top: -15px; position: absolute; font-size: " + marker.data.size + ";'><i class='" + marker.data.icon + "' style='color: " + marker.data.color + "; font-size: " + marker.data.size + ";'></i><div class='active-state'><i class='" + marker.data.icon + "' style='color: " + marker.data.color + ";'></i></div></div>")
-            this.markerElemHandler = new Hammer(markerElem.get(0))
+            markerElem = $("<div id='" + marker.id + "' class='marker' data-id='" + marker.id + "' data-name='" + marker.data.name + "' style='left: -15px; top: -15px; position: absolute; font-size: " + marker.data.size + ";'><i class='" + marker.data.icon + "' style='color: " + marker.data.color + '; font-size: ' + marker.data.size + ";'></i><div class='active-state'><i class='" + marker.data.icon + "' style='color: " + marker.data.color + ";'></i></div></div>");
+            this.markerElemHandler = new Hammer(markerElem.get(0));
 
-            createdMarkers.push(Fliplet.UI.PanZoom.Markers.create(markerElem, { x: marker.data.positionX, y: marker.data.positionY, name: marker.data.name, id: marker.id }))
+            createdMarkers.push(Fliplet.UI.PanZoom.Markers.create(markerElem, { x: marker.data.positionX, y: marker.data.positionY, name: marker.data.name, id: marker.id }));
           }
-        })
-        this.flPanZoomInstances[this.selectedMarkerData.map.id].markers.set(createdMarkers)
-        return
+        });
+        this.flPanZoomInstances[this.selectedMarkerData.map.id].markers.set(createdMarkers);
+
+        return;
       }
 
       if (options.existingMarker) {
-        options.existingMarker.update({x: options.x, y: options.y}, true)
-        $('#' + options.id).addClass('active')
+        options.existingMarker.update({ x: options.x, y: options.y }, true);
+        $('#' + options.id).addClass('active');
         this.updateMarkerCoordinates({
           x: options.x,
           y: options.y,
           marker: options.existingMarker.vars
-        })
+        });
       } else if (options.singleMarker) {
-        const markersLength = this.flPanZoomInstances[options.mapId].markers.getAll().length
-        markerElem = $("<div id='" + options.id + "' class='marker' data-id='" + options.id + "' data-name='" + options.name + "' style='left: -15px; top: -15px; position: absolute; font-size: " + options.iconSize + ";'><i class='" + options.icon + "' style='color: " + options.iconColor + "; font-size: " + options.iconSize + ";'></i><div class='active-state'><i class='" + options.icon + "' style='color: " + options.iconColor + ";'></i></div></div>")
-        this.markerElemHandler = new Hammer(markerElem.get(0))
+        markerElem = $("<div id='" + options.id + "' class='marker' data-id='" + options.id + "' data-name='" + options.name + "' style='left: -15px; top: -15px; position: absolute; font-size: " + options.iconSize + ";'><i class='" + options.icon + "' style='color: " + options.iconColor + '; font-size: ' + options.iconSize + ";'></i><div class='active-state'><i class='" + options.icon + "' style='color: " + options.iconColor + ";'></i></div></div>");
+        this.markerElemHandler = new Hammer(markerElem.get(0));
 
-        createdMarkers.push(Fliplet.UI.PanZoom.Markers.create(markerElem, { x: options.x, y: options.y, name: options.name, id: options.id }))
-        this.flPanZoomInstances[options.mapId].markers.set(createdMarkers)
+        createdMarkers.push(Fliplet.UI.PanZoom.Markers.create(markerElem, { x: options.x, y: options.y, name: options.name, id: options.id }));
+        this.flPanZoomInstances[options.mapId].markers.set(createdMarkers);
         // Deselect the current marker
-        $('.marker').removeClass('active')
+        $('.marker').removeClass('active');
         // Select new marker
-        $('#' + options.id).addClass('active')
+        $('#' + options.id).addClass('active');
       } else {
         return Fliplet.Modal.confirm({
           title: 'Add a new marker',
@@ -536,89 +540,93 @@ Fliplet.InteractiveMap.component('add-markers', {
           }
         }).then((result) => {
           if (!result) {
-            return
+            return;
           }
 
-          return this.addNewMarker(options)
-        })
+          return this.addNewMarker(options);
+        });
       }
     },
     updateMarkerCoordinates(coordinates) {
       if (!coordinates) {
-        return
+        return;
       }
 
       this.mappedMarkerData.forEach((marker, index) => {
         if (marker.id === coordinates.marker.id) {
-          this.mappedMarkerData[index].data.positionX = coordinates.x
-          this.mappedMarkerData[index].data.positionY = coordinates.y
+          this.mappedMarkerData[index].data.positionX = coordinates.x;
+          this.mappedMarkerData[index].data.positionY = coordinates.y;
         }
-      })
+      });
 
-      this.saveDebounced()
+      this.saveDebounced();
     },
     attachEventHandler() {
-      this.pzHandler.on('tap', this.onTapHandler)
+      this.pzHandler.on('tap', this.onTapHandler);
     },
     detachEventHandler() {
-      this.pzHandler.off('tap', this.onTapHandler)
+      this.pzHandler.off('tap', this.onTapHandler);
     },
     onTapHandler(e) {
       if ($(e.target).hasClass('marker')) {
         // If user clicks on a marker
-        const markerId = $(e.target).data('id')
-        const markerIndex = _.findIndex(this.mappedMarkerData, (marker) => {
-          return marker.id == markerId
-        })
-        this.setActiveMarker(markerIndex, true)
-        return
+        const markerId = $(e.target).data('id');
+        const markerIndex = _.findIndex(this.mappedMarkerData, {
+          id: markerId
+        });
+
+        this.setActiveMarker(markerIndex, true);
+
+        return;
       }
 
       // If user click somewhere on the map
       // Find a marker
-      const markers = this.flPanZoomInstances[this.selectedMarkerData.map.id].markers.getAll()
-      let markerId = undefined
+      const markers = this.flPanZoomInstances[this.selectedMarkerData.map.id].markers.getAll();
+      let markerId;
       const markerIndex = _.findIndex(markers, (marker) => {
-        return marker.vars.id === this.selectedMarkerData.marker.id
-      })
-      const markerFound = markers[markerIndex]
+        return marker.vars.id === this.selectedMarkerData.marker.id;
+      });
+      const markerFound = markers[markerIndex];
 
       if (markerFound) {
-        markerId = markerFound.vars.id
+        markerId = markerFound.vars.id;
       }
 
-      const clientRect = this.pzElement.get(0).getBoundingClientRect()
-      const elemPosX = clientRect.left
-      const elemPosY = clientRect.top
-      const center = e.center
-      const x = (center.x - elemPosX) / (this.flPanZoomInstances[this.selectedMarkerData.map.id].getBaseZoom() * this.flPanZoomInstances[this.selectedMarkerData.map.id].getCurrentZoom())
-      const y = (center.y - elemPosY) / (this.flPanZoomInstances[this.selectedMarkerData.map.id].getBaseZoom() * this.flPanZoomInstances[this.selectedMarkerData.map.id].getCurrentZoom())
+      const clientRect = this.pzElement.get(0).getBoundingClientRect();
+      const elemPosX = clientRect.left;
+      const elemPosY = clientRect.top;
+      const center = e.center;
+      const x = (center.x - elemPosX) / (this.flPanZoomInstances[this.selectedMarkerData.map.id].getBaseZoom() * this.flPanZoomInstances[this.selectedMarkerData.map.id].getCurrentZoom());
+      const y = (center.y - elemPosY) / (this.flPanZoomInstances[this.selectedMarkerData.map.id].getBaseZoom() * this.flPanZoomInstances[this.selectedMarkerData.map.id].getCurrentZoom());
 
       this.addMarkers(false, {
         x: x,
         y: y,
         id: markerId,
         existingMarker: markerFound
-      })
+      });
     },
     selectPinchMarker() {
       // Remove any active marker
-      $('.marker').removeClass('active')
+      $('.marker').removeClass('active');
+
       // Get markers
-      const markers = this.flPanZoomInstances[this.selectedMarkerData.map.id].markers.getAll()
+      const markers = this.flPanZoomInstances[this.selectedMarkerData.map.id].markers.getAll();
       // Store first marker
-      const marker = markers[0]
+      const marker = markers[0];
 
       // Find the new selected marker from flPanZoomInstance
       this.selectedPinchMarker = _.find(markers, (marker) => {
-        return marker.vars.id === this.mappedMarkerData[this.activeMarker].id
-      })
+        return marker.vars.id === this.mappedMarkerData[this.activeMarker].id;
+      });
+
       // Apply class active
       if (this.selectedPinchMarker) {
-        $(this.selectedPinchMarker.getElement().get(0)).addClass('active')
+        $(this.selectedPinchMarker.getElement().get(0)).addClass('active');
       } else {
-        this.activeMarker = _.findIndex(this.mappedMarkerData, (o) => { return o.id == marker.vars.id })
-        $(markers[0].getElement().get(0)).addClass('active')
+        this.activeMarker = _.findIndex(this.mappedMarkerData, { id: marker.vars.id });
+        $(markers[0].getElement().get(0)).addClass('active');
       }
     },
     getMarkersData() {
@@ -626,55 +634,57 @@ Fliplet.InteractiveMap.component('add-markers', {
         .then((connection) => {
           // If you want to do specific queries to return your rows
           // See the documentation here: https://developers.fliplet.com/API/fliplet-datasources.html
-          this.dataSourceConnection = connection // To keep the connection to update/delete data later on
-          return connection.find()
-        })
+          this.dataSourceConnection = connection; // To keep the connection to update/delete data later on
+
+          return connection.find();
+        });
     },
     cleanData() {
-      const newData = []
+      const newData = [];
 
       this.mappedMarkerData.forEach((marker, index) => {
         const newObj = {
           id: !marker.autoCreated ? marker.id : undefined,
           order: index,
           data: {}
-        }
+        };
 
-        newObj.data[this.markerNameColumn] = marker.data.name
-        newObj.data[this.markerMapColumn] = marker.data.map
-        newObj.data[this.markerTypeColumn] = marker.data.type
-        newObj.data[this.markerXPositionColumn] = marker.data.positionX
-        newObj.data[this.markerYPositionColumn] = marker.data.positionY
+        newObj.data[this.markerNameColumn] = marker.data.name;
+        newObj.data[this.markerMapColumn] = marker.data.map;
+        newObj.data[this.markerTypeColumn] = marker.data.type;
+        newObj.data[this.markerXPositionColumn] = marker.data.positionX;
+        newObj.data[this.markerYPositionColumn] = marker.data.positionY;
 
-        newData.push(newObj)
-      })
+        newData.push(newObj);
+      });
 
-      return newData
+      return newData;
     },
     saveToDataSource() {
-      const entries = this.cleanData()
-      const columns = this.markersDataSource.columns
-      this.dataSourceConnection.commit(entries, columns)
+      const entries = this.cleanData();
+      const columns = this.markersDataSource.columns;
+
+      this.dataSourceConnection.commit(entries, columns);
     },
     addNewMarker(options) {
-      let mapName
-      let mapId
+      let mapName;
+      let mapId;
 
       if (this.selectedMarkerData && this.selectedMarkerData.map) {
-        mapName = this.selectedMarkerData.map.name
-        mapId = this.selectedMarkerData.map.id
+        mapName = this.selectedMarkerData.map.name;
+        mapId = this.selectedMarkerData.map.id;
       } else if (this.widgetData.maps && this.widgetData.maps.length) {
-        mapName = this.widgetData.maps[0].name
-        mapId = this.widgetData.maps[0].id
+        mapName = this.widgetData.maps[0].name;
+        mapId = this.widgetData.maps[0].id;
       }
 
       // Get image size and center position
-      const image = $('#map-' + this.selectedMarkerData.map.id).find('img')[0]
-      const rect = image.getBoundingClientRect()
+      const image = $('#map-' + this.selectedMarkerData.map.id).find('img')[0];
+      const rect = image.getBoundingClientRect();
       const position = {
         x: (rect.width * 0.5) / (this.flPanZoomInstances[this.selectedMarkerData.map.id].getBaseZoom() * this.flPanZoomInstances[this.selectedMarkerData.map.id].getCurrentZoom()),
         y: (rect.height * 0.5) / (this.flPanZoomInstances[this.selectedMarkerData.map.id].getBaseZoom() * this.flPanZoomInstances[this.selectedMarkerData.map.id].getCurrentZoom())
-      }
+      };
 
       const markerInfo = {
         id: Fliplet.guid(),
@@ -687,7 +697,7 @@ Fliplet.InteractiveMap.component('add-markers', {
         mapName: mapName,
         x: options && _.hasIn(options, 'existingMarker') ? options.x : position.x,
         y: options && _.hasIn(options, 'existingMarker') ? options.y : position.y
-      }
+      };
 
       // Adds the marker to the map
       this.addMarkers(false, {
@@ -700,15 +710,16 @@ Fliplet.InteractiveMap.component('add-markers', {
         iconSize: markerInfo.size,
         iconColor: markerInfo.color,
         singleMarker: true
-      })
+      });
 
       // Scrolls to bottom
-      const scrollHeight = $('.markers-ui')[0].scrollHeight
+      const scrollHeight = $('.markers-ui')[0].scrollHeight;
+
       $('.markers-ui').animate({ scrollTop: scrollHeight }, 250);
 
-      this.prepareNewMarkerToSave(markerInfo)
+      this.prepareNewMarkerToSave(markerInfo);
     },
-    prepareNewMarkerToSave(markerInfo, options, position) {
+    prepareNewMarkerToSave(markerInfo) {
       // Prepare data to save
       const newObj = {
         data: {
@@ -725,17 +736,19 @@ Fliplet.InteractiveMap.component('add-markers', {
         },
         id: markerInfo.id,
         autoCreated: true
-      }
+      };
 
-      this.mappedMarkerData.push(newObj)
+      this.mappedMarkerData.push(newObj);
+
       // Select marker info row
       const newMarkerIndex = _.findIndex(this.mappedMarkerData, (o) => {
-        return o.data.name == markerInfo.name
-      })
-      this.setActiveMarker(newMarkerIndex, true)
+        return o.data.name === markerInfo.name;
+      });
+
+      this.setActiveMarker(newMarkerIndex, true);
 
       // Save
-      this.saveDebounced()
+      this.saveDebounced();
     },
     saveData() {
       const markersData = _.pick(this, [
@@ -745,41 +758,42 @@ Fliplet.InteractiveMap.component('add-markers', {
         'markerXPositionColumn',
         'markerYPositionColumn',
         'dataSourceToDelete'
-      ])
-      markersData.markersDataSourceId = this.dataSourceId
-      // Ref to know if the user changed data source
-      markersData.changedDataSource = this.dataWasChanged
-      markersData.markers = this.allMarkerStyles
+      ]);
 
-      Fliplet.InteractiveMap.emit('add-markers-settings-changed', markersData)
+      markersData.markersDataSourceId = this.dataSourceId;
+      // Ref to know if the user changed data source
+      markersData.changedDataSource = this.dataWasChanged;
+      markersData.markers = this.allMarkerStyles;
+
+      Fliplet.InteractiveMap.emit('add-markers-settings-changed', markersData);
     },
     reloadData() {
       return this.getMarkersData()
         .then((data) => {
-          this.markersData = data
-          this.mappedMarkerData = this.mapMarkerData()
-          this.saveDebounced()
-          this.setupFlPanZoom()
-          return
-        })
+          this.markersData = data;
+          this.mappedMarkerData = this.mapMarkerData();
+          this.saveDebounced();
+          this.setupFlPanZoom();
+
+          return;
+        });
     },
     isColumnMissing() {
-      const results = []
       const savedColumnNames = [
         this.markerNameColumn,
         this.markerMapColumn,
         this.markerTypeColumn,
         this.markerXPositionColumn,
         this.markerYPositionColumn
-      ]
+      ];
 
       const columnMissing = savedColumnNames.some((name) => {
-        if (this.markersDataSource.columns.indexOf(name) == -1) {
-          return true
+        if (this.markersDataSource.columns.indexOf(name) === -1) {
+          return true;
         }
-      })
+      });
 
-      return columnMissing
+      return columnMissing;
     }
   },
   created() {
@@ -787,35 +801,37 @@ Fliplet.InteractiveMap.component('add-markers', {
       if (_.get(event, 'data.event') === 'overlay-close' && _.get(event.data, 'data.dataSourceId')) {
         this.reloadDataSources()
           .then((dataSources) => {
-            this.dataSources = dataSources
-            this.markersDataSource = _.find(this.dataSources, { id: this.markersDataSourceId })
-            const columnsMissing = this.isColumnMissing()
+            this.dataSources = dataSources;
+            this.markersDataSource = _.find(this.dataSources, { id: this.markersDataSourceId });
+
+            const columnsMissing = this.isColumnMissing();
+
             if (columnsMissing) {
-              return Promise.reject('columns-changed')
+              return Promise.reject('columns-changed');
             }
 
-            return this.reloadData()
+            return this.reloadData();
           })
           .catch((error) => {
-            if (error == 'columns-changed') {
-              this.configureDataSources()
+            if (error === 'columns-changed') {
+              this.configureDataSources();
             }
-          })
+          });
       }
-    })
+    });
 
-    Fliplet.InteractiveMap.on('add-markers-save', this.saveData)
-    Fliplet.InteractiveMap.on('marker-panel-settings-changed', this.onMarkerPanelSettingChanged)
+    Fliplet.InteractiveMap.on('add-markers-save', this.saveData);
+    Fliplet.InteractiveMap.on('marker-panel-settings-changed', this.onMarkerPanelSettingChanged);
   },
   async mounted() {
-    this.markersData = await this.getMarkersData()
-    this.mappedMarkerData = this.mapMarkerData()
+    this.markersData = await this.getMarkersData();
+    this.mappedMarkerData = this.mapMarkerData();
 
-    this.isLoading = false
-    this.$nextTick(this.setupFlPanZoom)
+    this.isLoading = false;
+    this.$nextTick(this.setupFlPanZoom);
   },
   destroyed() {
-    Fliplet.InteractiveMap.off('add-markers-save', this.saveData)
-    Fliplet.InteractiveMap.off('marker-panel-settings-changed', this.onMarkerPanelSettingChanged)
+    Fliplet.InteractiveMap.off('add-markers-save', this.saveData);
+    Fliplet.InteractiveMap.off('marker-panel-settings-changed', this.onMarkerPanelSettingChanged);
   }
-})
+});

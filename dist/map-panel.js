@@ -151,7 +151,6 @@ Fliplet.InteractiveMap.component('map-panel', {
     },
     updateDataSource: function updateDataSource() {
       var _this = this;
-
       Fliplet.DataSources.connect(this.dataSourceId).then(function (connection) {
         _this.dataSourceConnection = connection;
         connection.find({
@@ -160,7 +159,6 @@ Fliplet.InteractiveMap.component('map-panel', {
           if (!records.length) {
             return;
           }
-
           _this.dataSourceConnection.find().then(function (records) {
             records.forEach(function (elem, index, array) {
               if (elem.data['Map name'] === _this.oldMapName) {
@@ -169,7 +167,6 @@ Fliplet.InteractiveMap.component('map-panel', {
             });
             _this.entries = records;
             _this.columns = _.keys(records[0].data);
-
             _this.saveToDataSource();
           });
         });
@@ -177,16 +174,13 @@ Fliplet.InteractiveMap.component('map-panel', {
     },
     onInputData: function onInputData(imageSaved) {
       var componentData = _.pick(this, ['id', 'name', 'image', 'type', 'isFromNew']);
-
       Fliplet.InteractiveMap.emit('map-panel-settings-changed', componentData);
-
       if (imageSaved) {
         Fliplet.InteractiveMap.emit('new-map-added');
       }
     },
     openMapPicker: function openMapPicker() {
       var _this2 = this;
-
       Fliplet.DataSources.connect(this.dataSourceId).then(function (connection) {
         _this2.dataSourceConnection = connection;
         connection.find({
@@ -195,7 +189,6 @@ Fliplet.InteractiveMap.component('map-panel', {
           if (!records.length) {
             return;
           }
-
           Fliplet.Modal.confirm({
             title: 'Change image',
             message: 'Do you want to keep the existing markers?',
@@ -216,7 +209,6 @@ Fliplet.InteractiveMap.component('map-panel', {
               _this2.shouldKeepMarkers = true;
               return;
             }
-
             records.forEach(function (elem) {
               _this2.dataSourceConnection.removeById(elem.id);
             });
@@ -243,6 +235,8 @@ Fliplet.InteractiveMap.component('map-panel', {
               });
               Fliplet.Widget.toggleSaveButton(!!data.length);
               break;
+            default:
+              break;
           }
         }
       });
@@ -250,11 +244,9 @@ Fliplet.InteractiveMap.component('map-panel', {
         if (_this2.shouldKeepMarkers) {
           var newImageWidth = result.data[0].size[0];
           var newImageHeight = result.data[0].size[1];
-
           if (newImageWidth !== _this2.imageWidth && newImageHeight !== _this2.imageHeight) {
             var widthRatioDifference = newImageWidth / _this2.imageWidth;
             var heightRatioDifference = newImageHeight / _this2.imageHeight;
-
             _this2.dataSourceConnection.find().then(function (records) {
               records.forEach(function (elem, index, array) {
                 if (elem.data['Map name'] === _this2.name) {
@@ -264,26 +256,20 @@ Fliplet.InteractiveMap.component('map-panel', {
               });
               _this2.entries = records;
               _this2.columns = _.keys(records[0].data);
-
               _this2.saveToDataSource();
             });
           }
         }
-
         Fliplet.Widget.toggleCancelButton(true);
         var imageUrl = result.data[0].url;
         var pattern = /[?&]size=/;
-
         if (!pattern.test(imageUrl)) {
           var params = imageUrl.substring(1).split('?');
           imageUrl += (params.length > 1 ? '&' : '?') + 'size=large';
         }
-
         result.data[0].url = imageUrl;
         _this2.image = result.data[0];
-
         _this2.onInputData(true);
-
         window.filePickerProvider = null;
         Fliplet.Studio.emit('widget-save-label-reset');
         return Promise.resolve();
@@ -299,7 +285,6 @@ Fliplet.InteractiveMap.component('map-panel', {
 });
 Fliplet.Widget.onCancelRequest(function () {
   var providersNames = ['filePickerProvider', 'iconPickerProvider'];
-
   _.each(providersNames, function (providerName) {
     if (window[providerName]) {
       window[providerName].close();
@@ -307,7 +292,6 @@ Fliplet.Widget.onCancelRequest(function () {
       Fliplet.Widget.toggleSaveButton(providerName !== 'iconPickerProvider');
     }
   });
-
   Fliplet.Widget.toggleCancelButton(true);
   Fliplet.Studio.emit('widget-save-label-reset');
 });
@@ -332,11 +316,9 @@ function _defineProperty(obj, key, value) {
   } else {
     obj[key] = value;
   }
-
   return obj;
 }
-
-module.exports = _defineProperty;
+module.exports = _defineProperty, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
 /***/ }),
 
@@ -347,7 +329,7 @@ module.exports = _defineProperty;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Work\fliplet-widget-interactive-map\js\interface\map-panel.js */"./js/interface/map-panel.js");
+module.exports = __webpack_require__(/*! /Users/twu/Sites/fliplet/widgets/fliplet-widget-interactive-map/js/interface/map-panel.js */"./js/interface/map-panel.js");
 
 
 /***/ })

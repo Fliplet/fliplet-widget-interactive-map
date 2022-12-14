@@ -40,13 +40,14 @@ Fliplet.InteractiveMap.component('marker-panel', {
   },
   methods: {
     onInputData() {
-      const componentData = _.pick(this, ['id', 'name', 'icon', 'color', 'size', 'type', 'isFromNew'])
-      Fliplet.InteractiveMap.emit('marker-panel-settings-changed', componentData)
+      const componentData = _.pick(this, ['id', 'name', 'icon', 'color', 'size', 'type', 'isFromNew']);
+
+      Fliplet.InteractiveMap.emit('marker-panel-settings-changed', componentData);
     },
     openIconPicker() {
-      this.icon = this.icon || ''
+      this.icon = this.icon || '';
 
-      Fliplet.Widget.toggleCancelButton(false)
+      Fliplet.Widget.toggleCancelButton(false);
 
       window.iconPickerProvider = Fliplet.Widget.open('com.fliplet.icon-selector', {
         // Also send the data I have locally, so that
@@ -55,48 +56,50 @@ Fliplet.InteractiveMap.component('marker-panel', {
         // Events fired from the provider
         onEvent: (event, data) => {
           switch (event) {
-            case 'interface-validate': 
-              Fliplet.Widget.toggleSaveButton(data.isValid === true)
-              break
+            case 'interface-validate':
+              Fliplet.Widget.toggleSaveButton(data.isValid === true);
+              break;
             case 'icon-clicked':
               Fliplet.Widget.toggleSaveButton(data.isSelected);
-              break
+              break;
             default:
-              break
+              break;
           }
         }
-      })
+      });
 
       Fliplet.Studio.emit('widget-save-label-update', {
         text: 'Select & Save'
-      })
+      });
 
       window.iconPickerProvider.then((data) => {
-        Fliplet.Widget.toggleCancelButton(true)
+        Fliplet.Widget.toggleCancelButton(true);
+
         if (!data.data.icon) {
-          this.emptyIconNotification = true
+          this.emptyIconNotification = true;
         } else {
-          this.icon = data.data.icon
-          this.emptyIconNotification = false
+          this.icon = data.data.icon;
+          this.emptyIconNotification = false;
         }
 
         this.onInputData();
-        window.iconPickerProvider = null
-        Fliplet.Studio.emit('widget-save-label-reset')
-        Fliplet.Widget.toggleSaveButton(false)
-        return Promise.resolve()
+        window.iconPickerProvider = null;
+        Fliplet.Studio.emit('widget-save-label-reset');
+        Fliplet.Widget.toggleSaveButton(false);
+
+        return Promise.resolve();
       });
     }
   },
   created() {
-    Fliplet.InteractiveMap.on('markers-save', this.onInputData)
+    Fliplet.InteractiveMap.on('markers-save', this.onInputData);
   },
   destroyed() {
-    Fliplet.InteractiveMap.off('markers-save', this.onInputData)
+    Fliplet.InteractiveMap.off('markers-save', this.onInputData);
   },
   mounted() {
-    const $vm = this
-    const $colorpickerElement = $('#list-item-color-' + $vm.id).parents('[colorpicker-component]')
+    const $vm = this;
+    const $colorpickerElement = $('#list-item-color-' + $vm.id).parents('[colorpicker-component]');
 
     $colorpickerElement.colorpicker({
       container: true,
@@ -113,19 +116,19 @@ Fliplet.InteractiveMap.component('marker-panel', {
           maxTop: 235
         }
       }
-    })
+    });
 
     $colorpickerElement.on('changeColor', (e) => {
-      $vm.color = e.value
-      $vm.onInputData()
-    })
+      $vm.color = e.value;
+      $vm.onInputData();
+    });
 
     $('#list-item-color-' + $vm.id).on('click', () => {
-      $(this).prev('.input-group-addon').find('i').trigger('click')
-    })
+      $(this).prev('.input-group-addon').find('i').trigger('click');
+    });
 
     $('.input-group-addon i').on('click', () => {
-      $(this).parents('.input-group-addon').next('#list-item-color-' + $vm.id).trigger('focus')
-    })
+      $(this).parents('.input-group-addon').next('#list-item-color-' + $vm.id).trigger('focus');
+    });
   }
 });
