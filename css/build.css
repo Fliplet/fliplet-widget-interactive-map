@@ -344,7 +344,6 @@ body.fl-with-bottom-menu [data-widget-package^="com.fliplet.interactive-map"] {
 .interactive-map-overlay-topbar {
   position: absolute;
   top: 0;
-  top: env(safe-area-inset-top);
   left: 0;
   width: 100%;
   padding: 0px 20px;
@@ -392,9 +391,7 @@ body.fl-with-bottom-menu [data-widget-package^="com.fliplet.interactive-map"] {
 
 .interactive-maps-search-overlay .interactive-map-overlay-scroll-container {
   top: 89px;
-  top: calc(89px + env(safe-area-inset-top));
   height: calc(100% - 89px);
-  height: calc(100% - (89px + env(safe-area-inset-top)));
 }
 
 .interactive-map-overlay-list {
