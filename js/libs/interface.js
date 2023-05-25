@@ -69,6 +69,14 @@ new Vue({
         this.settings.markerYPositionColumn = 'Position Y';
         this.settings.autoDataSource = true;
         this.settings.changedDataSource = false;
+      }).catch((err) => {
+        const errorJSON = err && err.responseJSON || {};
+
+        if (errorJSON.type && errorJSON.type.indexOf('billing.enforcement') > -1) {
+          Fliplet.Studio.emit('show-enforcement-warning', errorJSON);
+        }
+
+        return Promise.reject();
       });
     },
     checkMapName(name, increment) {
@@ -367,46 +375,51 @@ new Vue({
       });
     }
   },
-  async created() {
+  created() {
     Fliplet.InteractiveMap.on('map-panel-settings-changed', this.onPanelSettingChanged);
     Fliplet.InteractiveMap.on('new-map-added', this.saveMapSettings);
     Fliplet.InteractiveMap.on('add-markers-settings-changed', this.onAddMarkersSettingChanged);
 
+    let createDataSource = Promise.resolve();
+
     // Create data source on first time
     if (!this.autoDataSource) {
-      await this.createDataSource();
+      createDataSource = this.createDataSource();
     }
 
-    // Gets the list of data sources
-    this.dataSources = await this.loadDataSources();
+    createDataSource
+      .then(async() => {
+        // Gets the list of data sources
+        this.dataSources = await this.loadDataSources();
 
-    // Switches UI to ready state
-    $(selector).removeClass('is-loading');
+        // Switches UI to ready state
+        $(selector).removeClass('is-loading');
 
-    Fliplet.Studio.onMessage((event) => {
-      if (_.get(event, 'data.event') === 'overlay-close' && _.get(event.data, 'data.dataSourceId')) {
-        this.loadDataSources();
-      }
-    });
+        Fliplet.Studio.onMessage((event) => {
+          if (_.get(event, 'data.event') === 'overlay-close' && _.get(event.data, 'data.dataSourceId')) {
+            this.loadDataSources();
+          }
+        });
 
-    Fliplet.Widget.onSaveRequest(() => {
-      if (window.filePickerProvider) {
-        window.filePickerProvider.forwardSaveRequest();
+        Fliplet.Widget.onSaveRequest(() => {
+          if (window.filePickerProvider) {
+            window.filePickerProvider.forwardSaveRequest();
 
-        return;
-      }
+            return;
+          }
 
-      if (window.iconPickerProvider) {
-        window.iconPickerProvider.forwardSaveRequest();
+          if (window.iconPickerProvider) {
+            window.iconPickerProvider.forwardSaveRequest();
 
-        return;
-      }
+            return;
+          }
 
-      Fliplet.InteractiveMap.emit('maps-save');
-      Fliplet.InteractiveMap.emit('markers-save');
-      Fliplet.InteractiveMap.emit('add-markers-save');
-      this.prepareToSaveData();
-    });
+          Fliplet.InteractiveMap.emit('maps-save');
+          Fliplet.InteractiveMap.emit('markers-save');
+          Fliplet.InteractiveMap.emit('add-markers-save');
+          this.prepareToSaveData();
+        });
+      });
   },
   destroyed() {
     Fliplet.InteractiveMap.off('map-panel-settings-changed', this.onPanelSettingChanged);

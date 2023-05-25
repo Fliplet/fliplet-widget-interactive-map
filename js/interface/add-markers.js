@@ -425,7 +425,14 @@ Fliplet.InteractiveMap.component('add-markers', {
             this.styleNames = [];
             this.markersData = records;
             this.mappedMarkerData = this.mapMarkerData();
-            this.dataSourceConnection.commit(records, columns);
+            this.dataSourceConnection.commit(records, columns)
+              .catch((err) => {
+                const errorJSON = err && err.responseJSON || {};
+
+                if (errorJSON.type && errorJSON.type.indexOf('billing.enforcement') > -1) {
+                  Fliplet.Studio.emit('show-enforcement-warning', errorJSON);
+                }
+              });
             this.setupFlPanZoom();
 
             Fliplet.Studio.emit('reload-widget-instance', this.widgetInstanceId);
@@ -664,7 +671,14 @@ Fliplet.InteractiveMap.component('add-markers', {
       const entries = this.cleanData();
       const columns = this.markersDataSource.columns;
 
-      this.dataSourceConnection.commit(entries, columns);
+      this.dataSourceConnection.commit(entries, columns)
+        .catch((err) => {
+          const errorJSON = err && err.responseJSON || {};
+
+          if (errorJSON.type && errorJSON.type.indexOf('billing.enforcement') > -1) {
+            Fliplet.Studio.emit('show-enforcement-warning', errorJSON);
+          }
+        });
     },
     addNewMarker(options) {
       let mapName;

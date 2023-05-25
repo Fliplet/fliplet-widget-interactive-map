@@ -42,8 +42,17 @@ Fliplet.InteractiveMap.component('map-panel', {
   },
   methods: {
     saveToDataSource() {
-      this.dataSourceConnection.commit(this.entries, this.columns);
+      this.dataSourceConnection.commit(this.entries, this.columns)
+        .catch((err) => {
+          const errorJSON = err && err.responseJSON || {};
+
+          if (errorJSON.type && errorJSON.type.indexOf('billing.enforcement') > -1) {
+            Fliplet.Studio.emit('show-enforcement-warning', errorJSON);
+          }
+        });
+
       this.oldMapName = this.name;
+
       Fliplet.Studio.emit('reload-widget-instance', this.widgetInstanceId);
     },
     getMapName() {

@@ -506,7 +506,12 @@ Fliplet.InteractiveMap.component('add-markers', {
             _this9.styleNames = [];
             _this9.markersData = records;
             _this9.mappedMarkerData = _this9.mapMarkerData();
-            _this9.dataSourceConnection.commit(records, columns);
+            _this9.dataSourceConnection.commit(records, columns)["catch"](function (err) {
+              var errorJSON = err && err.responseJSON || {};
+              if (errorJSON.type && errorJSON.type.indexOf('billing.enforcement') > -1) {
+                Fliplet.Studio.emit('show-enforcement-warning', errorJSON);
+              }
+            });
             _this9.setupFlPanZoom();
             Fliplet.Studio.emit('reload-widget-instance', _this9.widgetInstanceId);
             Fliplet.Widget.toggleSaveButton(true);
@@ -739,7 +744,12 @@ Fliplet.InteractiveMap.component('add-markers', {
     saveToDataSource: function saveToDataSource() {
       var entries = this.cleanData();
       var columns = this.markersDataSource.columns;
-      this.dataSourceConnection.commit(entries, columns);
+      this.dataSourceConnection.commit(entries, columns)["catch"](function (err) {
+        var errorJSON = err && err.responseJSON || {};
+        if (errorJSON.type && errorJSON.type.indexOf('billing.enforcement') > -1) {
+          Fliplet.Studio.emit('show-enforcement-warning', errorJSON);
+        }
+      });
     },
     addNewMarker: function addNewMarker(options) {
       var mapName;
@@ -1319,7 +1329,7 @@ try {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /Users/twu/Sites/fliplet/widgets/fliplet-widget-interactive-map/js/interface/add-markers.js */"./js/interface/add-markers.js");
+module.exports = __webpack_require__(/*! C:\Users\hugoc\Documents\GitHub\fliplet-widget-interactive-map\js\interface\add-markers.js */"./js/interface/add-markers.js");
 
 
 /***/ })
