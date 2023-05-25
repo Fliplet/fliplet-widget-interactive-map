@@ -42,7 +42,11 @@ Fliplet.InteractiveMap.component('map-panel', {
   },
   methods: {
     saveToDataSource() {
-      this.dataSourceConnection.commit(this.entries, this.columns)
+      this.dataSourceConnection.commit({
+        entries: this.entries,
+        append: true,
+        extend: true
+      })
         .catch((err) => {
           const errorJSON = err && err.responseJSON || {};
 

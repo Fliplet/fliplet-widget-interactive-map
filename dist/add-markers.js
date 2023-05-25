@@ -502,11 +502,14 @@ Fliplet.InteractiveMap.component('add-markers', {
                 elem.data['Marker style'] = matchedStyleName.newStyleName;
               }
             });
-            var columns = _.keys(records[0].data);
             _this9.styleNames = [];
             _this9.markersData = records;
             _this9.mappedMarkerData = _this9.mapMarkerData();
-            _this9.dataSourceConnection.commit(records, columns)["catch"](function (err) {
+            _this9.dataSourceConnection.commit({
+              entries: records,
+              append: true,
+              extend: true
+            })["catch"](function (err) {
               var errorJSON = err && err.responseJSON || {};
               if (errorJSON.type && errorJSON.type.indexOf('billing.enforcement') > -1) {
                 Fliplet.Studio.emit('show-enforcement-warning', errorJSON);
@@ -743,8 +746,11 @@ Fliplet.InteractiveMap.component('add-markers', {
     },
     saveToDataSource: function saveToDataSource() {
       var entries = this.cleanData();
-      var columns = this.markersDataSource.columns;
-      this.dataSourceConnection.commit(entries, columns)["catch"](function (err) {
+      this.dataSourceConnection.commit({
+        entries: entries,
+        append: true,
+        extend: true
+      })["catch"](function (err) {
         var errorJSON = err && err.responseJSON || {};
         if (errorJSON.type && errorJSON.type.indexOf('billing.enforcement') > -1) {
           Fliplet.Studio.emit('show-enforcement-warning', errorJSON);

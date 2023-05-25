@@ -142,7 +142,11 @@ Fliplet.InteractiveMap.component('map-panel', {
   },
   methods: {
     saveToDataSource: function saveToDataSource() {
-      this.dataSourceConnection.commit(this.entries, this.columns)["catch"](function (err) {
+      this.dataSourceConnection.commit({
+        entries: this.entries,
+        append: true,
+        extend: true
+      })["catch"](function (err) {
         var errorJSON = err && err.responseJSON || {};
         if (errorJSON.type && errorJSON.type.indexOf('billing.enforcement') > -1) {
           Fliplet.Studio.emit('show-enforcement-warning', errorJSON);
