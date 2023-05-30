@@ -502,11 +502,18 @@ Fliplet.InteractiveMap.component('add-markers', {
                 elem.data['Marker style'] = matchedStyleName.newStyleName;
               }
             });
-            var columns = _.keys(records[0].data);
             _this9.styleNames = [];
             _this9.markersData = records;
             _this9.mappedMarkerData = _this9.mapMarkerData();
-            _this9.dataSourceConnection.commit(records, columns);
+            _this9.dataSourceConnection.commit({
+              entries: records,
+              append: true,
+              extend: true
+            })["catch"](function (err) {
+              if (err.responseJSON && err.responseJSON.handled) {
+                return;
+              }
+            });
             _this9.setupFlPanZoom();
             Fliplet.Studio.emit('reload-widget-instance', _this9.widgetInstanceId);
             Fliplet.Widget.toggleSaveButton(true);
@@ -738,8 +745,15 @@ Fliplet.InteractiveMap.component('add-markers', {
     },
     saveToDataSource: function saveToDataSource() {
       var entries = this.cleanData();
-      var columns = this.markersDataSource.columns;
-      this.dataSourceConnection.commit(entries, columns);
+      this.dataSourceConnection.commit({
+        entries: entries,
+        append: true,
+        extend: true
+      })["catch"](function (err) {
+        if (err.responseJSON && err.responseJSON.handled) {
+          return;
+        }
+      });
     },
     addNewMarker: function addNewMarker(options) {
       var mapName;
@@ -1319,7 +1333,7 @@ try {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /Users/twu/Sites/fliplet/widgets/fliplet-widget-interactive-map/js/interface/add-markers.js */"./js/interface/add-markers.js");
+module.exports = __webpack_require__(/*! C:\Users\hugoc\Documents\GitHub\fliplet-widget-interactive-map\js\interface\add-markers.js */"./js/interface/add-markers.js");
 
 
 /***/ })

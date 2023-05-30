@@ -185,6 +185,10 @@ new Vue({
         _this.settings.markerYPositionColumn = 'Position Y';
         _this.settings.autoDataSource = true;
         _this.settings.changedDataSource = false;
+      })["catch"](function (err) {
+        if (err.responseJSON && err.responseJSON.handled) {
+          return Promise.reject();
+        }
       });
     },
     checkMapName: function checkMapName(name, increment) {
@@ -446,26 +450,23 @@ new Vue({
   },
   created: function created() {
     var _this6 = this;
-    return _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee() {
+    Fliplet.InteractiveMap.on('map-panel-settings-changed', this.onPanelSettingChanged);
+    Fliplet.InteractiveMap.on('new-map-added', this.saveMapSettings);
+    Fliplet.InteractiveMap.on('add-markers-settings-changed', this.onAddMarkersSettingChanged);
+    var createDataSource = Promise.resolve();
+
+    // Create data source on first time
+    if (!this.autoDataSource) {
+      createDataSource = this.createDataSource();
+    }
+    createDataSource.then( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee() {
       return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
-              Fliplet.InteractiveMap.on('map-panel-settings-changed', _this6.onPanelSettingChanged);
-              Fliplet.InteractiveMap.on('new-map-added', _this6.saveMapSettings);
-              Fliplet.InteractiveMap.on('add-markers-settings-changed', _this6.onAddMarkersSettingChanged);
-
-              // Create data source on first time
-              if (_this6.autoDataSource) {
-                _context.next = 6;
-                break;
-              }
-              _context.next = 6;
-              return _this6.createDataSource();
-            case 6:
-              _context.next = 8;
+              _context.next = 2;
               return _this6.loadDataSources();
-            case 8:
+            case 2:
               _this6.dataSources = _context.sent;
               // Switches UI to ready state
               $(selector).removeClass('is-loading');
@@ -488,13 +489,13 @@ new Vue({
                 Fliplet.InteractiveMap.emit('add-markers-save');
                 _this6.prepareToSaveData();
               });
-            case 12:
+            case 6:
             case "end":
               return _context.stop();
           }
         }
       }, _callee);
-    }))();
+    })));
   },
   destroyed: function destroyed() {
     Fliplet.InteractiveMap.off('map-panel-settings-changed', this.onPanelSettingChanged);
@@ -4713,7 +4714,7 @@ try {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /Users/twu/Sites/fliplet/widgets/fliplet-widget-interactive-map/js/libs/interface.js */"./js/libs/interface.js");
+module.exports = __webpack_require__(/*! C:\Users\hugoc\Documents\GitHub\fliplet-widget-interactive-map\js\libs\interface.js */"./js/libs/interface.js");
 
 
 /***/ })
