@@ -429,7 +429,7 @@ Fliplet.InteractiveMap.component('add-markers', {
               extend: true
             })
               .catch((err) => {
-                if (err.responseJSON  && err.responseJSON.handled) {
+                if (Fliplet.Error.isHandled(err)) {
                   return;
                 }
               });
@@ -676,7 +676,7 @@ Fliplet.InteractiveMap.component('add-markers', {
         extend: true
       })
         .catch((err) => {
-          if (err.responseJSON  && err.responseJSON.handled) {
+          if (Fliplet.Error.isHandled(err)) {
             return;
           }
         });

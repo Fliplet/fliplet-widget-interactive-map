@@ -510,7 +510,7 @@ Fliplet.InteractiveMap.component('add-markers', {
               append: true,
               extend: true
             })["catch"](function (err) {
-              if (err.responseJSON && err.responseJSON.handled) {
+              if (Fliplet.Error.isHandled(err)) {
                 return;
               }
             });
@@ -750,7 +750,7 @@ Fliplet.InteractiveMap.component('add-markers', {
         append: true,
         extend: true
       })["catch"](function (err) {
-        if (err.responseJSON && err.responseJSON.handled) {
+        if (Fliplet.Error.isHandled(err)) {
           return;
         }
       });

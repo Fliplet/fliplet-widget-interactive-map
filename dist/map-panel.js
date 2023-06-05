@@ -147,7 +147,7 @@ Fliplet.InteractiveMap.component('map-panel', {
         append: true,
         extend: true
       })["catch"](function (err) {
-        if (err.responseJSON && err.responseJSON.handled) {
+        if (Fliplet.Error.isHandled(err)) {
           return;
         }
       });

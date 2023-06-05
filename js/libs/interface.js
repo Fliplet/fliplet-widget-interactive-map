@@ -70,7 +70,7 @@ new Vue({
         this.settings.autoDataSource = true;
         this.settings.changedDataSource = false;
       }).catch((err) => {
-        if (err.responseJSON  && err.responseJSON.handled) {
+        if (Fliplet.Error.isHandled(err)) {
           return Promise.reject();
         }
       });
