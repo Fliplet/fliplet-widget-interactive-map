@@ -42,8 +42,19 @@ Fliplet.InteractiveMap.component('map-panel', {
   },
   methods: {
     saveToDataSource() {
-      this.dataSourceConnection.commit(this.entries, this.columns);
+      this.dataSourceConnection.commit({
+        entries: this.entries,
+        append: true,
+        extend: true
+      })
+        .catch((err) => {
+          if (Fliplet.Error.isHandled(err)) {
+            return;
+          }
+        });
+
       this.oldMapName = this.name;
+
       Fliplet.Studio.emit('reload-widget-instance', this.widgetInstanceId);
     },
     getMapName() {

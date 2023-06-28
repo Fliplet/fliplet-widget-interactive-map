@@ -420,12 +420,19 @@ Fliplet.InteractiveMap.component('add-markers', {
               }
             });
 
-            const columns = _.keys(records[0].data);
-
             this.styleNames = [];
             this.markersData = records;
             this.mappedMarkerData = this.mapMarkerData();
-            this.dataSourceConnection.commit(records, columns);
+            this.dataSourceConnection.commit({
+              entries: records,
+              append: true,
+              extend: true
+            })
+              .catch((err) => {
+                if (Fliplet.Error.isHandled(err)) {
+                  return;
+                }
+              });
             this.setupFlPanZoom();
 
             Fliplet.Studio.emit('reload-widget-instance', this.widgetInstanceId);
@@ -662,9 +669,17 @@ Fliplet.InteractiveMap.component('add-markers', {
     },
     saveToDataSource() {
       const entries = this.cleanData();
-      const columns = this.markersDataSource.columns;
 
-      this.dataSourceConnection.commit(entries, columns);
+      this.dataSourceConnection.commit({
+        entries,
+        append: true,
+        extend: true
+      })
+        .catch((err) => {
+          if (Fliplet.Error.isHandled(err)) {
+            return;
+          }
+        });
     },
     addNewMarker(options) {
       let mapName;
