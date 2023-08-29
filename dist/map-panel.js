@@ -142,11 +142,7 @@ Fliplet.InteractiveMap.component('map-panel', {
   },
   methods: {
     saveToDataSource: function saveToDataSource() {
-      this.dataSourceConnection.commit({
-        entries: this.entries,
-        append: true,
-        extend: true
-      })["catch"](function (err) {
+      this.dataSourceConnection.commit(this.entries, this.columns)["catch"](function (err) {
         if (Fliplet.Error.isHandled(err)) {
           return;
         }
