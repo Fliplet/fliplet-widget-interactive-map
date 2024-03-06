@@ -225,7 +225,7 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
         setupFlPanZoom: function setupFlPanZoom() {
           var _this3 = this;
           this.selectedMapData = this.maps[this.activeMap];
-          this.selectedMarkerData = this.mappedMarkerData[this.activeMarker] ? this.mappedMarkerData[this.activeMarker].data : undefined;
+          this.selectedMarkerData = this.mappedMarkerData[this.activeMarker] && this.mappedMarkerData[this.activeMarker].data.map === this.selectedMapData.name ? this.mappedMarkerData[this.activeMarker].data : undefined;
           this.selectedMarkerToggle = !!this.selectedMarkerData;
 
           // Check if there is a map to initialize
@@ -283,6 +283,7 @@ Fliplet.Widget.instance('interactive-map', function (widgetData) {
               return _this4.getMarkerId(obj.id) === firstMarker.vars.id;
             });
             this.selectedMarkerData = this.mappedMarkerData[this.activeMarker].data;
+            this.selectedMarkerToggle = !!this.selectedMarkerData;
             $(firstMarker.getElement().get(0)).addClass('active');
           }
         },
@@ -953,7 +954,7 @@ try {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\hugoc\Documents\GitHub\fliplet-widget-interactive-map\js\libs\build.js */"./js/libs/build.js");
+module.exports = __webpack_require__(/*! /home/user/fliplet-widget-interactive-map/js/libs/build.js */"./js/libs/build.js");
 
 
 /***/ })
