@@ -128,9 +128,10 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
         },
         setupFlPanZoom() {
           this.selectedMapData = this.maps[this.activeMap];
-          this.selectedMarkerData = this.mappedMarkerData[this.activeMarker]
-            ? this.mappedMarkerData[this.activeMarker].data
-            : undefined;
+          this.selectedMarkerData =
+            this.mappedMarkerData[this.activeMarker] && this.mappedMarkerData[this.activeMarker].data.map === this.selectedMapData.name
+              ? this.mappedMarkerData[this.activeMarker].data
+              : undefined;
           this.selectedMarkerToggle = !!this.selectedMarkerData;
 
           // Check if there is a map to initialize
@@ -193,6 +194,7 @@ Fliplet.Widget.instance('interactive-map', function(widgetData) {
               return this.getMarkerId(obj.id) === firstMarker.vars.id;
             });
             this.selectedMarkerData = this.mappedMarkerData[this.activeMarker].data;
+            this.selectedMarkerToggle = !!this.selectedMarkerData;
             $(firstMarker.getElement().get(0)).addClass('active');
           }
         },
