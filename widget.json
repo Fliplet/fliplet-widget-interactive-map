@@ -20,6 +20,7 @@
       "vendor/bootstrap-colorpicker.min.js",
       "vendor/bootstrap-colorpicker.css",
 
+      "dist/utils.js",
       "js/interface.templates.js",
       "dist/core.js",
 
@@ -43,6 +44,7 @@
       "vue.js"
     ],
     "assets": [
+      "dist/utils.js",
       "dist/build.js",
       "css/build.css"
     ]

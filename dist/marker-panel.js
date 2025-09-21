@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 5);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -135,7 +135,7 @@ Fliplet.InteractiveMap.component('marker-panel', {
   },
   methods: {
     onInputData: function onInputData() {
-      var componentData = _.pick(this, ['id', 'name', 'icon', 'color', 'size', 'type', 'isFromNew']);
+      var componentData = FlipletInteractiveMapUtils.pick(this, ['id', 'name', 'icon', 'color', 'size', 'type', 'isFromNew']);
       Fliplet.InteractiveMap.emit('marker-panel-settings-changed', componentData);
     },
     openIconPicker: function openIconPicker() {
@@ -220,7 +220,7 @@ Fliplet.InteractiveMap.component('marker-panel', {
 
 /***/ }),
 
-/***/ 5:
+/***/ 6:
 /*!********************************************!*\
   !*** multi ./js/interface/marker-panel.js ***!
   \********************************************/
