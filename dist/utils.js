@@ -120,7 +120,7 @@ function pick(object, paths) {
   var keys = Array.isArray(paths) ? paths : [paths];
   var result = {};
   keys.forEach(function (key) {
-    if (typeof key === 'string' && Object.prototype.hasOwnProperty.call(object, key)) {
+    if (typeof key === 'string' && key in object) {
       result[key] = object[key];
     }
   });
