@@ -195,7 +195,7 @@ new Vue({
       if (increment) {
         name = "Map ".concat(this.maps.length + increment);
       }
-      return !!_.find(this.maps, {
+      return !!FlipletInteractiveMapUtils.find(this.maps, {
         name: name
       });
     },
@@ -260,7 +260,7 @@ new Vue({
       });
 
       // Find panels with same names
-      var result = _.difference(this.maps, _.uniqBy(this.maps, 'name'));
+      var result = FlipletInteractiveMapUtils.difference(this.maps, FlipletInteractiveMapUtils.uniqBy(this.maps, 'name'));
       if (result.length) {
         result.forEach(function (panel) {
           panel.error = 'Maps must have different names';
@@ -268,7 +268,7 @@ new Vue({
       }
     },
     onAddMarkersSettingChanged: function onAddMarkersSettingChanged(addMarkersData) {
-      this.settings = _.assignIn(this.settings, addMarkersData);
+      this.settings = FlipletInteractiveMapUtils.assignIn(this.settings, addMarkersData);
       this.prepareToSaveData(true);
     },
     addMarker: function addMarker() {
@@ -297,7 +297,7 @@ new Vue({
       }
 
       // Check if maps have images
-      var mapsWithoutImages = _.filter(this.maps, function (map) {
+      var mapsWithoutImages = FlipletInteractiveMapUtils.filter(this.maps, function (map) {
         return typeof map.image === 'undefined';
       });
       if (mapsWithoutImages.length) {
@@ -308,7 +308,7 @@ new Vue({
       }
 
       // Check if maps have same name
-      var mapsWithSameName = _.filter(this.maps, function (map) {
+      var mapsWithSameName = FlipletInteractiveMapUtils.filter(this.maps, function (map) {
         return typeof map.error !== 'undefined' && map.error !== '';
       });
       if (mapsWithSameName.length) {
@@ -350,7 +350,7 @@ new Vue({
       }
 
       // Check if maps have images
-      var mapsWithoutImages = _.filter(this.maps, function (map) {
+      var mapsWithoutImages = FlipletInteractiveMapUtils.filter(this.maps, function (map) {
         return typeof map.image === 'undefined';
       });
       if (!stopComplete && mapsWithoutImages.length) {
@@ -366,7 +366,7 @@ new Vue({
       }
 
       // Check if maps have same name
-      var mapsWithSameName = _.filter(this.maps, function (map) {
+      var mapsWithSameName = FlipletInteractiveMapUtils.filter(this.maps, function (map) {
         return typeof map.error !== 'undefined' && map.error !== '';
       });
       if (mapsWithSameName.length) {
@@ -375,7 +375,7 @@ new Vue({
         };
         return;
       }
-      var emptyNameIndex = _.findIndex(this.maps, function (map) {
+      var emptyNameIndex = FlipletInteractiveMapUtils.findIndex(this.maps, function (map) {
         return map.name === '';
       });
       if (emptyNameIndex !== -1) {
@@ -415,7 +415,7 @@ new Vue({
         maps: this.maps,
         markers: this.markers
       };
-      this.settings = _.assignIn(this.settings, newSettings);
+      this.settings = FlipletInteractiveMapUtils.assignIn(this.settings, newSettings);
       this.settings.savedData = true;
       var promise = Promise.resolve();
       if (this.settings.dataSourceToDelete && !stopComplete) {
@@ -471,7 +471,7 @@ new Vue({
               // Switches UI to ready state
               $(selector).removeClass('is-loading');
               Fliplet.Studio.onMessage(function (event) {
-                if (_.get(event, 'data.event') === 'overlay-close' && _.get(event.data, 'data.dataSourceId')) {
+                if (FlipletInteractiveMapUtils.get(event, 'data.event') === 'overlay-close' && FlipletInteractiveMapUtils.get(event.data, 'data.dataSourceId')) {
                   _this6.loadDataSources();
                 }
               });

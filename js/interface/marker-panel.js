@@ -40,7 +40,7 @@ Fliplet.InteractiveMap.component('marker-panel', {
   },
   methods: {
     onInputData() {
-      const componentData = _.pick(this, ['id', 'name', 'icon', 'color', 'size', 'type', 'isFromNew']);
+      const componentData = FlipletInteractiveMapUtils.pick(this, ['id', 'name', 'icon', 'color', 'size', 'type', 'isFromNew']);
 
       Fliplet.InteractiveMap.emit('marker-panel-settings-changed', componentData);
     },

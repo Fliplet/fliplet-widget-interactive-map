@@ -80,7 +80,7 @@ new Vue({
         name = `Map ${this.maps.length + increment}`;
       }
 
-      return !!_.find(this.maps, { name: name });
+      return !!FlipletInteractiveMapUtils.find(this.maps, { name: name });
     },
     generateMapName() {
       let increment = 1;
@@ -147,7 +147,7 @@ new Vue({
       });
 
       // Find panels with same names
-      var result = _.difference(this.maps, _.uniqBy(this.maps, 'name'));
+      var result = FlipletInteractiveMapUtils.difference(this.maps, FlipletInteractiveMapUtils.uniqBy(this.maps, 'name'));
 
       if (result.length) {
         result.forEach((panel) => {
@@ -156,7 +156,7 @@ new Vue({
       }
     },
     onAddMarkersSettingChanged(addMarkersData) {
-      this.settings = _.assignIn(this.settings, addMarkersData);
+      this.settings = FlipletInteractiveMapUtils.assignIn(this.settings, addMarkersData);
       this.prepareToSaveData(true);
     },
     addMarker() {
@@ -187,7 +187,7 @@ new Vue({
       }
 
       // Check if maps have images
-      const mapsWithoutImages = _.filter(this.maps, (map) => {
+      const mapsWithoutImages = FlipletInteractiveMapUtils.filter(this.maps, (map) => {
         return typeof map.image === 'undefined';
       });
 
@@ -200,7 +200,7 @@ new Vue({
       }
 
       // Check if maps have same name
-      const mapsWithSameName = _.filter(this.maps, (map) => {
+      const mapsWithSameName = FlipletInteractiveMapUtils.filter(this.maps, (map) => {
         return typeof map.error !== 'undefined' && map.error !== '';
       });
 
@@ -249,7 +249,7 @@ new Vue({
       }
 
       // Check if maps have images
-      const mapsWithoutImages = _.filter(this.maps, (map) => {
+      const mapsWithoutImages = FlipletInteractiveMapUtils.filter(this.maps, (map) => {
         return typeof map.image === 'undefined';
       });
 
@@ -268,7 +268,7 @@ new Vue({
       }
 
       // Check if maps have same name
-      const mapsWithSameName = _.filter(this.maps, (map) => {
+      const mapsWithSameName = FlipletInteractiveMapUtils.filter(this.maps, (map) => {
         return typeof map.error !== 'undefined' && map.error !== '';
       });
 
@@ -280,7 +280,7 @@ new Vue({
         return;
       }
 
-      let emptyNameIndex = _.findIndex(this.maps, function(map) {
+      let emptyNameIndex = FlipletInteractiveMapUtils.findIndex(this.maps, function(map) {
         return map.name === '';
       });
 
@@ -331,7 +331,7 @@ new Vue({
         markers: this.markers
       };
 
-      this.settings = _.assignIn(this.settings, newSettings);
+      this.settings = FlipletInteractiveMapUtils.assignIn(this.settings, newSettings);
       this.settings.savedData = true;
 
       let promise = Promise.resolve();
@@ -392,7 +392,7 @@ new Vue({
         $(selector).removeClass('is-loading');
 
         Fliplet.Studio.onMessage((event) => {
-          if (_.get(event, 'data.event') === 'overlay-close' && _.get(event.data, 'data.dataSourceId')) {
+          if (FlipletInteractiveMapUtils.get(event, 'data.event') === 'overlay-close' && FlipletInteractiveMapUtils.get(event.data, 'data.dataSourceId')) {
             this.loadDataSources();
           }
         });

@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -128,7 +128,7 @@ Fliplet.InteractiveMap.component('map-panel', {
   },
   data: function data() {
     return {
-      updateDebounced: _.debounce(this.updateDataSource, 1000),
+      updateDebounced: FlipletInteractiveMapUtils.debounce(this.updateDataSource, 1000),
       widgetInstanceId: Fliplet.Widget.getDefaultId(),
       dataSourceId: Fliplet.Widget.getData().markersDataSourceId,
       entries: undefined,
@@ -170,14 +170,14 @@ Fliplet.InteractiveMap.component('map-panel', {
               }
             });
             _this.entries = records;
-            _this.columns = _.keys(records[0].data);
+            _this.columns = FlipletInteractiveMapUtils.keys(records[0].data);
             _this.saveToDataSource();
           });
         });
       });
     },
     onInputData: function onInputData(imageSaved) {
-      var componentData = _.pick(this, ['id', 'name', 'image', 'type', 'isFromNew']);
+      var componentData = FlipletInteractiveMapUtils.pick(this, ['id', 'name', 'image', 'type', 'isFromNew']);
       Fliplet.InteractiveMap.emit('map-panel-settings-changed', componentData);
       if (imageSaved) {
         Fliplet.InteractiveMap.emit('new-map-added');
@@ -259,7 +259,7 @@ Fliplet.InteractiveMap.component('map-panel', {
                 }
               });
               _this2.entries = records;
-              _this2.columns = _.keys(records[0].data);
+              _this2.columns = FlipletInteractiveMapUtils.keys(records[0].data);
               _this2.saveToDataSource();
             });
           }
@@ -289,7 +289,7 @@ Fliplet.InteractiveMap.component('map-panel', {
 });
 Fliplet.Widget.onCancelRequest(function () {
   var providersNames = ['filePickerProvider', 'iconPickerProvider'];
-  _.each(providersNames, function (providerName) {
+  FlipletInteractiveMapUtils.each(providersNames, function (providerName) {
     if (window[providerName]) {
       window[providerName].close();
       window[providerName] = null;
@@ -326,7 +326,7 @@ module.exports = _defineProperty, module.exports.__esModule = true, module.expor
 
 /***/ }),
 
-/***/ 4:
+/***/ 5:
 /*!*****************************************!*\
   !*** multi ./js/interface/map-panel.js ***!
   \*****************************************/
