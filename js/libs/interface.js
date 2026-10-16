@@ -351,7 +351,7 @@ new Vue({
           }
 
           this.hasErrorOnSave = {
-            message: `Your changes weren't saved because the previous data source couldn't be removed: ${Fliplet.parseError(err)}`
+            message: `Couldn't save and close because the previous data source couldn't be removed: ${Fliplet.parseError(err)}`
           };
         });
     },

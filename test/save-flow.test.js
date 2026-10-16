@@ -55,7 +55,8 @@ function setup(options) {
   };
   const vm = loadMethods({ Fliplet: fliplet, widgetId: 1 }, [
     'prepareToSaveData(stopComplete, imageSaved) {',
-    'saveData(stopComplete, imageSaved) {'
+    'saveData(stopComplete, imageSaved) {',
+    'onAddMarkersSettingChanged(addMarkersData) {'
   ]);
 
   vm.hasError = false;
@@ -110,7 +111,7 @@ describe('prepareToSaveData', () => {
     await wait();
 
     assert.deepEqual(names(calls), ['delete']);
-    assert.match(vm.hasErrorOnSave.message, /previous data source couldn't be removed: parsed 500/);
+    assert.equal(vm.hasErrorOnSave.message, 'Couldn\'t save and close because the previous data source couldn\'t be removed: parsed 500');
     assert.equal(vm.settings.dataSourceToDelete, 5);
   });
 
@@ -123,6 +124,34 @@ describe('prepareToSaveData', () => {
     assert.deepEqual(names(calls), ['delete']);
     assert.equal(vm.hasErrorOnSave, false);
     assert.equal(vm.settings.dataSourceToDelete, 5);
+  });
+
+  it('Save & Close with Mark map(s) open deletes the switched data source once and saves without the field', async() => {
+    const { vm, calls } = setup();
+
+    // Mark map(s) is open: add-markers emits its fields first (a settings
+    // save), then Save & Close runs
+    vm.onAddMarkersSettingChanged({
+      dataSourceToDelete: 5,
+      markersDataSourceId: 20,
+      markerMapColumn: 'Map name',
+      markerNameColumn: 'Name',
+      markerTypeColumn: 'Marker style',
+      markerXPositionColumn: 'Position X',
+      markerYPositionColumn: 'Position Y'
+    });
+    vm.prepareToSaveData();
+    await wait();
+
+    const deletes = calls.filter((call) => call[0] === 'delete');
+    const saves = calls.filter((call) => call[0] === 'save');
+    const lastSave = saves[saves.length - 1][1];
+
+    assert.deepEqual(deletes, [['delete', 5]]);
+    assert.equal('dataSourceToDelete' in lastSave, false);
+    assert.equal(lastSave.markersDataSourceId, 20);
+    assert.equal(calls.filter((call) => call[0] === 'complete').length, 1);
+    assert.equal(vm.hasErrorOnSave, false);
   });
 
   it('image save does not delete and still saves and reloads', async() => {
