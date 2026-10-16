@@ -438,6 +438,43 @@ function each(collection, iteratee) {
   }
 }
 
+/**
+ * Deletes the previous markers data source saved in settings.dataSourceToDelete
+ * and clears the field so the delete only runs once.
+ * A 404 means the data source is already gone and counts as done.
+ * The active markers data source is never deleted.
+ * @param {Object} settings - The widget settings
+ * @param {Function} deleteDataSource - Deletes a data source by ID and returns a promise
+ * @returns {Promise} Resolves when there is nothing left to delete, otherwise rejects with the original error
+ */
+function removeOldDataSource(settings, deleteDataSource) {
+  const dataSourceId = settings && settings.dataSourceToDelete;
+
+  if (!dataSourceId) {
+    return Promise.resolve();
+  }
+
+  if (String(dataSourceId) === String(settings.markersDataSourceId)) {
+    delete settings.dataSourceToDelete;
+
+    return Promise.resolve();
+  }
+
+  return Promise.resolve()
+    .then(() => deleteDataSource(dataSourceId))
+    .then(() => {
+      delete settings.dataSourceToDelete;
+    }, (err) => {
+      if (err && err.status === 404) {
+        delete settings.dataSourceToDelete;
+
+        return;
+      }
+
+      return Promise.reject(err);
+    });
+}
+
 // Export all utility functions
 window.FlipletInteractiveMapUtils = {
   pick,
@@ -456,5 +493,6 @@ window.FlipletInteractiveMapUtils = {
   difference,
   uniqBy,
   assignIn,
-  each
+  each,
+  removeOldDataSource
 };

@@ -336,13 +336,23 @@ new Vue({
 
       let promise = Promise.resolve();
 
-      if (this.settings.dataSourceToDelete && !stopComplete) {
-        promise = Fliplet.DataSources.delete(this.settings.dataSourceToDelete);
+      // Remove the previous markers data source on Save & Close only.
+      // The field is cleared before saving so the delete doesn't run again.
+      if (!stopComplete) {
+        promise = FlipletInteractiveMapUtils.removeOldDataSource(this.settings, Fliplet.DataSources.delete);
       }
 
       promise
         .then(() => {
           this.saveData(stopComplete, imageSaved);
+        }, (err) => {
+          if (Fliplet.Error.isHandled(err)) {
+            return;
+          }
+
+          this.hasErrorOnSave = {
+            message: `Your changes weren't saved because the previous data source couldn't be removed: ${Fliplet.parseError(err)}`
+          };
         });
     },
     saveData(stopComplete, imageSaved) {
