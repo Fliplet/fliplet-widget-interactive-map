@@ -420,7 +420,8 @@ new Vue({
       var promise = Promise.resolve();
 
       // Remove the previous markers data source on Save & Close only.
-      // The field is cleared before saving so the delete doesn't run again.
+      // The field is set to null before saving so the stored value is removed
+      // and the delete doesn't run again.
       if (!stopComplete) {
         promise = FlipletInteractiveMapUtils.removeOldDataSource(this.settings, Fliplet.DataSources["delete"]);
       }

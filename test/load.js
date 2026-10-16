@@ -67,4 +67,24 @@ function loadMethods(globals, markers) {
   return vm.runInContext(`({\n${methods}\n})`, context);
 }
 
-module.exports = { loadUtils, loadMethods };
+/**
+ * Models how the API stores a Fliplet.Widget.save payload
+ * (routes/v1/widget-instances.js: _.omitBy(_.assign({}, stored, sent), _.isNil)):
+ * keys missing from the payload keep their stored value, null removes the key
+ * @param {Object} stored - The stored settings
+ * @param {Object} sent - The settings sent to Fliplet.Widget.save
+ * @returns {Object} The new stored settings
+ */
+function storeMerge(stored, sent) {
+  const merged = Object.assign({}, stored, JSON.parse(JSON.stringify(sent)));
+
+  Object.keys(merged).forEach((key) => {
+    if (merged[key] === null || merged[key] === undefined) {
+      delete merged[key];
+    }
+  });
+
+  return merged;
+}
+
+module.exports = { loadUtils, loadMethods, storeMerge };

@@ -441,6 +441,8 @@ function each(collection, iteratee) {
 /**
  * Deletes the previous markers data source saved in settings.dataSourceToDelete
  * and clears the field so the delete only runs once.
+ * The field is cleared with null, not delete: the API merges saved settings
+ * into the stored ones, so only a null removes the stored value.
  * A 404 means the data source is already gone and counts as done.
  * The active markers data source is never deleted.
  * @param {Object} settings - The widget settings
@@ -455,7 +457,7 @@ function removeOldDataSource(settings, deleteDataSource) {
   }
 
   if (String(dataSourceId) === String(settings.markersDataSourceId)) {
-    delete settings.dataSourceToDelete;
+    settings.dataSourceToDelete = null;
 
     return Promise.resolve();
   }
@@ -463,10 +465,10 @@ function removeOldDataSource(settings, deleteDataSource) {
   return Promise.resolve()
     .then(() => deleteDataSource(dataSourceId))
     .then(() => {
-      delete settings.dataSourceToDelete;
+      settings.dataSourceToDelete = null;
     }, (err) => {
       if (err && err.status === 404) {
-        delete settings.dataSourceToDelete;
+        settings.dataSourceToDelete = null;
 
         return;
       }
