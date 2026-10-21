@@ -550,6 +550,39 @@ function each(collection, iteratee) {
   }
 }
 
+/**
+ * Deletes the previous markers data source saved in settings.dataSourceToDelete
+ * and clears the field so the delete only runs once.
+ * The field is cleared with null, not delete: the API merges saved settings
+ * into the stored ones, so only a null removes the stored value.
+ * A 404 means the data source is already gone and counts as done.
+ * The active markers data source is never deleted.
+ * @param {Object} settings - The widget settings
+ * @param {Function} deleteDataSource - Deletes a data source by ID and returns a promise
+ * @returns {Promise} Resolves when there is nothing left to delete, otherwise rejects with the original error
+ */
+function removeOldDataSource(settings, deleteDataSource) {
+  var dataSourceId = settings && settings.dataSourceToDelete;
+  if (!dataSourceId) {
+    return Promise.resolve();
+  }
+  if (String(dataSourceId) === String(settings.markersDataSourceId)) {
+    settings.dataSourceToDelete = null;
+    return Promise.resolve();
+  }
+  return Promise.resolve().then(function () {
+    return deleteDataSource(dataSourceId);
+  }).then(function () {
+    settings.dataSourceToDelete = null;
+  }, function (err) {
+    if (err && err.status === 404) {
+      settings.dataSourceToDelete = null;
+      return;
+    }
+    return Promise.reject(err);
+  });
+}
+
 // Export all utility functions
 window.FlipletInteractiveMapUtils = {
   pick: pick,
@@ -568,7 +601,8 @@ window.FlipletInteractiveMapUtils = {
   difference: difference,
   uniqBy: uniqBy,
   assignIn: assignIn,
-  each: each
+  each: each,
+  removeOldDataSource: removeOldDataSource
 };
 
 /***/ }),
@@ -699,7 +733,7 @@ module.exports = _unsupportedIterableToArray, module.exports.__esModule = true, 
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /Users/devmac/Projects/ali/fliplet/fliplet-widget-interactive-map/js/libs/utils.js */"./js/libs/utils.js");
+module.exports = __webpack_require__(/*! /home/farhan.tariq/projects/fliplet/fliplet-widget-interactive-map/js/libs/utils.js */"./js/libs/utils.js");
 
 
 /***/ })

@@ -418,11 +418,22 @@ new Vue({
       this.settings = FlipletInteractiveMapUtils.assignIn(this.settings, newSettings);
       this.settings.savedData = true;
       var promise = Promise.resolve();
-      if (this.settings.dataSourceToDelete && !stopComplete) {
-        promise = Fliplet.DataSources["delete"](this.settings.dataSourceToDelete);
+
+      // Remove the previous markers data source on Save & Close only.
+      // The field is set to null before saving so the stored value is removed
+      // and the delete doesn't run again.
+      if (!stopComplete) {
+        promise = FlipletInteractiveMapUtils.removeOldDataSource(this.settings, Fliplet.DataSources["delete"]);
       }
       promise.then(function () {
         _this4.saveData(stopComplete, imageSaved);
+      }, function (err) {
+        if (Fliplet.Error.isHandled(err)) {
+          return;
+        }
+        _this4.hasErrorOnSave = {
+          message: "Couldn't save and close because the previous data source couldn't be removed: ".concat(Fliplet.parseError(err))
+        };
       });
     },
     saveData: function saveData(stopComplete, imageSaved) {
@@ -4714,7 +4725,7 @@ try {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\hugoc\Documents\GitHub\fliplet-widget-interactive-map\js\libs\interface.js */"./js/libs/interface.js");
+module.exports = __webpack_require__(/*! /home/farhan.tariq/projects/fliplet/fliplet-widget-interactive-map/js/libs/interface.js */"./js/libs/interface.js");
 
 
 /***/ })
